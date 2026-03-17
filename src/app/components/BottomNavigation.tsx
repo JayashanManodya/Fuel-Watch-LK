@@ -4,13 +4,13 @@ import { useTheme } from '../context/ThemeContext';
 
 export function BottomNavigation() {
   const location = useLocation();
-  const { theme } = useTheme();
+  const { theme, t } = useTheme();
 
   const navItems = [
-    { path: '/', icon: Home, label: 'Home' },
-    { path: '/submit', icon: PlusCircle, label: 'Submit' },
-    { path: '/feed', icon: Activity, label: 'Live Feed' },
-    { path: '/settings', icon: Settings, label: 'Settings' },
+    { path: '/', icon: Home, label: t('nav.home') },
+    { path: '/submit', icon: PlusCircle, label: t('nav.submit') },
+    { path: '/feed', icon: Activity, label: t('nav.feed') },
+    { path: '/settings', icon: Settings, label: t('nav.settings') },
   ];
 
   return (

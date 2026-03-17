@@ -8,7 +8,7 @@ import { MapView } from '../components/MapView';
 import { fetchFuelStations } from '../services/osmService';
 
 export function LiveFeedPage() {
-  const { theme } = useTheme();
+  const { theme, t } = useTheme();
   const [updates, setUpdates] = useState<UserUpdate[]>([]);
   const [isLive] = useState(true);
   const [stations, setStations] = useState<FuelStation[]>([]);
@@ -83,15 +83,15 @@ export function LiveFeedPage() {
                 <ArrowLeft className={`w-5 h-5 transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-700'}`} />
               </Link>
               <div>
-                <h1 className={`font-semibold transition-colors ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Live Community Feed</h1>
-                <p className={`text-sm transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Real-time updates from users</p>
+                <h1 className={`font-semibold transition-colors ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t('feed.title')}</h1>
+                <p className={`text-sm transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{t('feed.subtitle')}</p>
               </div>
             </div>
 
             {/* Live Indicator */}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-200">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              <span className="text-xs font-semibold text-red-700">LIVE</span>
+              <span className="text-xs font-semibold text-red-700">{t('feed.live')}</span>
             </div>
           </div>
         </header>
@@ -102,10 +102,10 @@ export function LiveFeedPage() {
         <div className={`mb-6 p-4 rounded-xl backdrop-blur-xl border transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700/50' : 'bg-white/60 border-gray-200/50'}`}>
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-blue-600'}`} />
-            <h2 className={`font-semibold transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>Community Activity</h2>
+            <h2 className={`font-semibold transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>{t('feed.activity')}</h2>
           </div>
           <p className={`text-sm transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-            <span className={`font-semibold transition-colors ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>{updates.length}</span> updates in the last hour from community members
+            <span className={`font-semibold transition-colors ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>{updates.length}</span> {t('feed.updates')}
           </p>
         </div>
 
@@ -138,9 +138,9 @@ export function LiveFeedPage() {
 
                   {/* Status Badge */}
                   <div className={`px-3 py-1 rounded-lg text-xs font-medium border ${getStatusColor(update.status)}`}>
-                    {update.status === 'available' ? 'Available' : ''}
-                    {update.status === 'limited' ? 'Limited' : ''}
-                    {update.status === 'out-of-stock' ? 'Out of Stock' : ''}
+                    {update.status === 'available' ? t('status.available') : ''}
+                    {update.status === 'limited' ? t('status.limited') : ''}
+                    {update.status === 'out-of-stock' ? t('status.out-of-stock') : ''}
                   </div>
                 </div>
 
@@ -148,22 +148,22 @@ export function LiveFeedPage() {
                 <div className="flex flex-wrap gap-2 mb-3">
                   {update.fuelTypes.petrol92 && (
                     <div className={`px-3 py-1 rounded-lg text-xs font-medium border ${getStatusColor(update.fuelTypes.petrol92)}`}>
-                      Petrol 92
+                      {t('fuel.petrol92')}
                     </div>
                   )}
                   {update.fuelTypes.petrol95 && (
                     <div className={`px-3 py-1 rounded-lg text-xs font-medium border ${getStatusColor(update.fuelTypes.petrol95)}`}>
-                      Petrol 95
+                      {t('fuel.petrol95')}
                     </div>
                   )}
                   {update.fuelTypes.diesel && (
                     <div className={`px-3 py-1 rounded-lg text-xs font-medium border ${getStatusColor(update.fuelTypes.diesel)}`}>
-                      Diesel
+                      {t('fuel.diesel')}
                     </div>
                   )}
                   {update.fuelTypes.kerosene && (
                     <div className={`px-3 py-1 rounded-lg text-xs font-medium border ${getStatusColor(update.fuelTypes.kerosene)}`}>
-                      Kerosene
+                      {t('fuel.kerosene')}
                     </div>
                   )}
                 </div>
@@ -172,11 +172,11 @@ export function LiveFeedPage() {
                 <div className={`flex items-center gap-4 mb-3 text-sm transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                   <div className="flex items-center gap-1.5">
                     <Users className="w-4 h-4" />
-                    <span>{update.queueLength} in queue</span>
+                    <span>{update.queueLength} {t('station.vehicles')}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-4 h-4" />
-                    <span>{update.waitingTime} min wait</span>
+                    <span>{update.waitingTime} {t('station.mins')} {t('station.wait')}</span>
                   </div>
                 </div>
 
@@ -194,7 +194,7 @@ export function LiveFeedPage() {
         {/* Load More (placeholder) */}
         <div className="mt-6 text-center">
           <button className={`px-6 py-3 rounded-xl border font-medium text-sm transition-all ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600' : 'bg-white border-gray-200 hover:border-gray-300 text-gray-700'}`}>
-            Load More Updates
+            {t('feed.loadMore')}
           </button>
         </div>
           </main>

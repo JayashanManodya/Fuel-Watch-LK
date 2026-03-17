@@ -7,9 +7,13 @@ interface ThemeContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   toggleTheme: () => void;
+  t: (key: string) => string;
+  localize: (obj: any, field: string) => string;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+import { translations } from '../data/translations';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
@@ -37,8 +41,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
+  const t = (key: string): string => {
+    return translations[language][key] || key;
+  };
+
+  const localize = (obj: any, field: string): string => {
+    if (!obj) return '';
+    const langSuffix = language === 'en' ? '' : (language === 'si' ? 'Si' : 'Ta');
+    const localizedValue = obj[`${field}${langSuffix}`];
+    return localizedValue || obj[field] || '';
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, language, setLanguage, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, language, setLanguage, toggleTheme, t, localize }}>
       {children}
     </ThemeContext.Provider>
   );

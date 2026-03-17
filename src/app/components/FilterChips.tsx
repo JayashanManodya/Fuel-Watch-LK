@@ -10,14 +10,14 @@ interface FilterChipsProps {
 
 export function FilterChips({ onFilterChange }: FilterChipsProps) {
   const [activeFilter, setActiveFilter] = useState<FuelType>('all');
-  const { theme } = useTheme();
+  const { theme, t } = useTheme();
 
   const filters = [
-    { id: 'all', label: 'All Stations', icon: Fuel },
-    { id: 'petrol92', label: 'Petrol 92', icon: Fuel },
-    { id: 'petrol95', label: 'Petrol 95', icon: Fuel },
-    { id: 'diesel', label: 'Diesel', icon: Fuel },
-    { id: 'kerosene', label: 'Kerosene', icon: Fuel },
+    { id: 'all', label: t('filter.all'), icon: Fuel },
+    { id: 'petrol92', label: t('fuel.petrol92'), icon: Fuel },
+    { id: 'petrol95', label: t('fuel.petrol95'), icon: Fuel },
+    { id: 'diesel', label: t('fuel.diesel'), icon: Fuel },
+    { id: 'kerosene', label: t('fuel.kerosene'), icon: Fuel },
   ];
 
   const handleFilterClick = (filterId: FuelType) => {

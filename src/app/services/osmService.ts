@@ -8,10 +8,22 @@ interface OSMElement {
   tags?: {
     name?: string;
     'name:en'?: string;
+    'name:si'?: string;
+    'name:ta'?: string;
     brand?: string;
+    'brand:en'?: string;
+    'brand:si'?: string;
+    'brand:ta'?: string;
     operator?: string;
+    'operator:en'?: string;
+    'operator:si'?: string;
+    'operator:ta'?: string;
     'addr:street'?: string;
+    'addr:street:si'?: string;
+    'addr:street:ta'?: string;
     'addr:city'?: string;
+    'addr:city:si'?: string;
+    'addr:city:ta'?: string;
   };
 }
 
@@ -64,8 +76,14 @@ export async function fetchFuelStations(forceRefresh = false): Promise<FuelStati
       const lat = el.lat || el.center?.lat || 0;
       const lon = el.lon || el.center?.lon || 0;
       
+      
       const name = el.tags?.['name:en'] || el.tags?.name || el.tags?.brand || el.tags?.operator || 'Unknown Fuel Station';
+      const nameSi = el.tags?.['name:si'] || el.tags?.['brand:si'] || el.tags?.['operator:si'];
+      const nameTa = el.tags?.['name:ta'] || el.tags?.['brand:ta'] || el.tags?.['operator:ta'];
+
       const address = el.tags?.['addr:street'] ? `${el.tags['addr:street']}, ${el.tags['addr:city'] || ''}` : 'Address not available';
+      const addressSi = el.tags?.['addr:street:si'] ? `${el.tags['addr:street:si']}, ${el.tags['addr:city:si'] || ''}` : undefined;
+      const addressTa = el.tags?.['addr:street:ta'] ? `${el.tags['addr:street:ta']}, ${el.tags['addr:city:ta'] || ''}` : undefined;
 
       const statuses: FuelStatus[] = ['available', 'limited', 'out-of-stock'];
       const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
@@ -73,12 +91,16 @@ export async function fetchFuelStations(forceRefresh = false): Promise<FuelStati
       return {
         id: el.id.toString(),
         name,
+        nameSi,
+        nameTa,
         status: randomStatus,
         lastUpdated: 'Live from Map',
         queueLength: Math.floor(Math.random() * 20),
         waitingTime: Math.floor(Math.random() * 30),
         coordinates: [lat, lon] as [number, number],
         address,
+        addressSi,
+        addressTa,
         fuelTypes: {
           petrol92: randomStatus,
           petrol95: (Math.random() > 0.4 ? 'available' : (Math.random() > 0.5 ? 'limited' : 'out-of-stock')) as FuelStatus,

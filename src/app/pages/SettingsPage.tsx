@@ -9,7 +9,7 @@ import type { FuelStation } from '../types';
 
 export function SettingsPage() {
   const navigate = useNavigate();
-  const { theme, toggleTheme, language, setLanguage } = useTheme();
+  const { theme, toggleTheme, language, setLanguage, t } = useTheme();
   const [stations, setStations] = useState<FuelStation[]>([]);
 
   useEffect(() => {
@@ -17,21 +17,8 @@ export function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    const changeLanguage = (langCode: string) => {
-      const select = document.querySelector('.goog-te-combo') as HTMLSelectElement;
-      if (select) {
-        select.value = langCode;
-        select.dispatchEvent(new Event('change'));
-      }
-    };
-
-    // Google Translate takes a moment to load
-    const timeout = setTimeout(() => {
-      changeLanguage(language);
-    }, 500);
-
-    return () => clearTimeout(timeout);
-  }, [language]);
+    fetchFuelStations().then(setStations);
+  }, []);
 
   const languages = [
     { id: 'en', name: 'English', native: 'English' },
@@ -60,8 +47,8 @@ export function SettingsPage() {
                 <ArrowLeft className="w-5 h-5" />
               </button>
               <div>
-                <h1 className="text-xl font-black tracking-tight">Settings</h1>
-                <p className={`text-[10px] font-bold uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>Preference Management</p>
+                <h1 className="text-xl font-black tracking-tight">{t('settings.title')}</h1>
+                <p className={`text-[10px] font-bold uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('settings.preference')}</p>
               </div>
             </div>
           </header>
@@ -71,7 +58,7 @@ export function SettingsPage() {
               {/* Appearance Section */}
               <section className="space-y-4">
                 <h2 className={`text-[10px] font-bold uppercase tracking-[0.2em] px-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                  Appearance
+                  {t('settings.appearance')}
                 </h2>
                 <div className={`rounded-3xl border overflow-hidden shadow-sm transition-colors duration-500
                   ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700/50' : 'bg-white border-gray-100'}
@@ -85,9 +72,9 @@ export function SettingsPage() {
                         {theme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                       </div>
                       <div className="text-left">
-                        <p className="font-bold text-sm">Dark Mode</p>
+                        <p className="font-bold text-sm">{t('settings.darkMode')}</p>
                         <p className={`text-[10px] font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                          {theme === 'dark' ? 'Enabled' : 'Disabled'}
+                          {theme === 'dark' ? t('settings.enabled') : t('settings.disabled')}
                         </p>
                       </div>
                     </div>
@@ -101,7 +88,7 @@ export function SettingsPage() {
               {/* Language Section */}
               <section className="space-y-4">
                 <h2 className={`text-[10px] font-bold uppercase tracking-[0.2em] px-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                  Language
+                  {t('settings.language')}
                 </h2>
                 <div className={`rounded-3xl border overflow-hidden shadow-sm divide-y transition-colors duration-500
                   ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700/50 divide-gray-700/50' : 'bg-white border-gray-100 divide-gray-50'}
@@ -111,7 +98,7 @@ export function SettingsPage() {
                       key={lang.id}
                       onClick={() => {
                         setLanguage(lang.id);
-                        toast.success(`Language changed to ${lang.name}`);
+                        toast.success(`${t('settings.langChanged')} ${lang.name}`);
                       }}
                       className={`w-full flex items-center justify-between p-5 transition-all ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-50'}`}
                     >
@@ -137,20 +124,20 @@ export function SettingsPage() {
               {/* Info Section */}
               <section className="space-y-4">
                 <h2 className={`text-[10px] font-bold uppercase tracking-[0.2em] px-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                  Information
+                  {t('settings.info')}
                 </h2>
                 <div className={`rounded-3xl border overflow-hidden shadow-sm transition-colors duration-500
                   ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700/50' : 'bg-white border-gray-100'}
                 `}>
                   <button className={`w-full flex items-center justify-between p-5 transition-all ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-50'}`}>
-                    <p className="font-bold text-sm">About Fuel Watch LK</p>
+                    <p className="font-bold text-sm">{t('settings.about')}</p>
                     <ChevronRight className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
                   </button>
                 </div>
               </section>
 
               <p className={`text-center text-[10px] font-bold uppercase tracking-[0.3em] py-8 ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`}>
-                Version 1.2.0 (Stable)
+                {t('settings.version')} 1.2.0 (Stable)
               </p>
             </div>
           </div>

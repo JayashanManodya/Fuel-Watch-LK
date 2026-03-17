@@ -12,7 +12,7 @@ import { MapView } from '../components/MapView';
 
 export function SubmitUpdatePage() {
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const { theme, t, localize } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stations, setStations] = useState<FuelStation[]>([]);
   const [formData, setFormData] = useState<SubmitUpdateForm>({
@@ -36,7 +36,7 @@ export function SubmitUpdatePage() {
     e.preventDefault();
     
     if (!formData.stationId || !formData.userName) {
-      toast.error('Please fill in all required fields');
+      toast.error(t('submit.errorFields'));
       return;
     }
 
@@ -45,8 +45,8 @@ export function SubmitUpdatePage() {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
 
-    toast.success('Update submitted successfully!', {
-      description: 'Thank you for helping the community!',
+    toast.success(t('submit.success'), {
+      description: t('submit.successDesc'),
       icon: <CheckCircle className="w-5 h-5" />,
     });
 
@@ -85,7 +85,7 @@ export function SubmitUpdatePage() {
           }
         `}
       >
-        {label}
+        {label === 'Available' ? t('status.available') : label === 'Limited' ? t('status.limited') : label === 'Out of Stock' ? t('status.out-of-stock') : label === 'Out' ? t('submit.out') : label === 'N/A' ? t('submit.notAvailable') : label}
       </button>
     );
   };
@@ -104,8 +104,8 @@ export function SubmitUpdatePage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className={`font-semibold transition-colors ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Submit Update</h1>
-              <p className={`text-sm transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Help the community with real-time info</p>
+              <h1 className={`font-semibold transition-colors ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{t('submit.title')}</h1>
+              <p className={`text-sm transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{t('submit.subtitle')}</p>
             </div>
           </div>
         </header>
@@ -116,7 +116,7 @@ export function SubmitUpdatePage() {
           {/* Select Station */}
           <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-sm transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-800/40 border-gray-700/50' : 'bg-white/80 border-gray-200/50'}`}>
             <Label htmlFor="station" className={`text-sm font-semibold mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
-              Select Fuel Station *
+              {t('submit.station')}
             </Label>
             <select
               id="station"
@@ -125,10 +125,10 @@ export function SubmitUpdatePage() {
               onChange={(e) => setFormData({ ...formData, stationId: e.target.value })}
               className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
             >
-              <option value="">Choose a station...</option>
+              <option value="">{t('submit.chooseStation')}</option>
               {stations.map((station) => (
                 <option key={station.id} value={station.id}>
-                  {station.name} - {station.address}
+                  {localize(station, 'name')} - {localize(station, 'address')}
                 </option>
               ))}
             </select>
@@ -137,13 +137,13 @@ export function SubmitUpdatePage() {
           {/* Your Name */}
           <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-sm transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-800/40 border-gray-700/50' : 'bg-white/80 border-gray-200/50'}`}>
             <Label htmlFor="userName" className={`text-sm font-semibold mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
-              Your Name *
+              {t('submit.yourName')}
             </Label>
             <Input
               id="userName"
               type="text"
               required
-              placeholder="e.g., Kamal Silva"
+              placeholder={t('submit.yourNamePlaceholder')}
               value={formData.userName}
               onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
               className={`w-full ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-white placeholder:text-gray-600' : ''}`}
@@ -153,7 +153,7 @@ export function SubmitUpdatePage() {
           {/* Overall Status */}
           <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-sm transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-800/40 border-gray-700/50' : 'bg-white/80 border-gray-200/50'}`}>
             <Label className={`text-sm font-semibold mb-3 block transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
-              Overall Station Status *
+              {t('submit.status')}
             </Label>
             <div className="flex gap-2 flex-wrap">
               <StatusButton value="available" label="Available" fieldName="status" />
@@ -166,7 +166,7 @@ export function SubmitUpdatePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-sm transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-800/40 border-gray-700/50' : 'bg-white/80 border-gray-200/50'}`}>
               <Label htmlFor="queue" className={`text-sm font-semibold mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
-                Queue Length (vehicles)
+                {t('submit.queue')}
               </Label>
               <Input
                 id="queue"
@@ -179,7 +179,7 @@ export function SubmitUpdatePage() {
             </div>
             <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-sm transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-800/40 border-gray-700/50' : 'bg-white/80 border-gray-200/50'}`}>
               <Label htmlFor="wait" className={`text-sm font-semibold mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
-                Waiting Time (minutes)
+                {t('submit.wait')}
               </Label>
               <Input
                 id="wait"
@@ -194,11 +194,11 @@ export function SubmitUpdatePage() {
 
           {/* Fuel Types */}
           <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-sm space-y-4 transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-800/40 border-gray-700/50' : 'bg-white/80 border-gray-200/50'}`}>
-            <h3 className={`text-sm font-semibold transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>Fuel Type Availability</h3>
+            <h3 className={`text-sm font-semibold transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>{t('submit.fuelAvailability')}</h3>
             
             {/* Petrol 92 */}
             <div>
-              <Label className={`text-sm mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-700'}`}>Petrol 92</Label>
+              <Label className={`text-sm mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-700'}`}>{t('fuel.petrol92')}</Label>
               <div className="flex gap-2 flex-wrap">
                 <StatusButton value="available" label="Available" fieldName="petrol92" />
                 <StatusButton value="limited" label="Limited" fieldName="petrol92" />
@@ -209,7 +209,7 @@ export function SubmitUpdatePage() {
 
             {/* Petrol 95 */}
             <div>
-              <Label className={`text-sm mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-700'}`}>Petrol 95</Label>
+              <Label className={`text-sm mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-700'}`}>{t('fuel.petrol95')}</Label>
               <div className="flex gap-2 flex-wrap">
                 <StatusButton value="available" label="Available" fieldName="petrol95" />
                 <StatusButton value="limited" label="Limited" fieldName="petrol95" />
@@ -220,7 +220,7 @@ export function SubmitUpdatePage() {
 
             {/* Diesel */}
             <div>
-              <Label className={`text-sm mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-700'}`}>Diesel</Label>
+              <Label className={`text-sm mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-700'}`}>{t('fuel.diesel')}</Label>
               <div className="flex gap-2 flex-wrap">
                 <StatusButton value="available" label="Available" fieldName="diesel" />
                 <StatusButton value="limited" label="Limited" fieldName="diesel" />
@@ -231,7 +231,7 @@ export function SubmitUpdatePage() {
 
             {/* Kerosene */}
             <div>
-              <Label className={`text-sm mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-700'}`}>Kerosene</Label>
+              <Label className={`text-sm mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-400' : 'text-gray-700'}`}>{t('fuel.kerosene')}</Label>
               <div className="flex gap-2 flex-wrap">
                 <StatusButton value="available" label="Available" fieldName="kerosene" />
                 <StatusButton value="limited" label="Limited" fieldName="kerosene" />
@@ -244,11 +244,12 @@ export function SubmitUpdatePage() {
           {/* Additional Message */}
           <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-sm transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-800/40 border-gray-700/50' : 'bg-white/80 border-gray-200/50'}`}>
             <Label htmlFor="message" className={`text-sm font-semibold mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
-              Additional Information (Optional)
+              {t('submit.message')}
             </Label>
+            <span className="text-[10px] text-gray-500 block mb-2 tracking-tight italic">{t('submit.optional')}</span>
             <Textarea
               id="message"
-              placeholder="e.g., Queue moving fast, diesel finishing soon..."
+              placeholder={t('submit.messagePlaceholder')}
               rows={4}
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -265,12 +266,12 @@ export function SubmitUpdatePage() {
             {isSubmitting ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Submitting...
+                {t('submit.submitting')}
               </>
             ) : (
               <>
                 <Send className="w-5 h-5" />
-                Submit Update
+                {t('submit.button')}
               </>
             )}
           </button>

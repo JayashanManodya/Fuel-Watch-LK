@@ -3,12 +3,16 @@ export type FuelStatus = 'available' | 'limited' | 'out-of-stock';
 export interface FuelStation {
   id: string;
   name: string;
+  nameSi?: string;
+  nameTa?: string;
   status: FuelStatus;
   lastUpdated: string;
   queueLength: number;
   waitingTime: number; // in minutes
   coordinates: [number, number]; // [latitude, longitude]
   address: string;
+  addressSi?: string;
+  addressTa?: string;
   fuelTypes: {
     petrol92?: FuelStatus;
     petrol95?: FuelStatus;

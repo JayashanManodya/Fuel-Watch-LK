@@ -15,7 +15,7 @@ type SortBy = 'status' | 'distance' | 'queue';
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const { theme, t, localize } = useTheme();
   const [activeFilter, setActiveFilter] = useState<FuelType>('all');
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [stations, setStations] = useState<FuelStation[]>([]);
@@ -23,7 +23,7 @@ export function HomePage() {
   const [sortBy, setSortBy] = useState<SortBy>('status');
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [locationName, setLocationName] = useState('All Island');
+  const [locationName, setLocationName] = useState(t('location.allIsland'));
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -98,8 +98,8 @@ export function HomePage() {
   const handleBoundsChange = useCallback(async (center: [number, number], zoom: number, bounds: MapBounds) => {
     setMapBounds(bounds);
     if (zoom < 9) {
-      if (locationName !== 'All Island') {
-        setLocationName('All Island');
+      if (locationName !== t('location.allIsland')) {
+        setLocationName(t('location.allIsland'));
       }
       return;
     }
@@ -160,8 +160,8 @@ export function HomePage() {
         .map(s => ({
           id: s.id,
           type: 'station' as const,
-          title: s.name,
-          subtitle: s.address,
+          title: localize(s, 'name'),
+          subtitle: localize(s, 'address'),
           coordinates: s.coordinates,
           station: s
         }));
@@ -209,7 +209,7 @@ export function HomePage() {
     const matchesFilter = activeFilter === 'all' || station.fuelTypes[activeFilter as keyof typeof station.fuelTypes] !== undefined;
     
     let isInBounds = true;
-    if (mapBounds && locationName !== 'All Island') {
+    if (mapBounds && locationName !== t('location.allIsland')) {
       const { northEast, southWest } = mapBounds;
       const [lat, lng] = station.coordinates;
       isInBounds = lat <= northEast[0] && lat >= southWest[0] && 
@@ -261,8 +261,8 @@ export function HomePage() {
               {/* Header Info */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className={`text-2xl font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'}`}>Fuel Watch</h1>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">SRI LANKA REAL-TIME</p>
+                  <h1 className={`text-2xl font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent'}`}>{t('app.title')}</h1>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">{t('app.subtitle')}</p>
                 </div>
                 <div className={`px-3 py-1.5 rounded-xl flex items-center gap-2 ${theme === 'dark' ? 'bg-white/5 border border-white/10' : 'bg-blue-50 border border-blue-100'}`}>
                   <MapPin className={`w-3.5 h-3.5 ${theme === 'dark' ? 'text-gray-400' : 'text-blue-600'}`} />
@@ -272,7 +272,7 @@ export function HomePage() {
 
               {/* Filter Chips */}
               <div className="space-y-3">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Select Fuel Type</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('submit.station')}</p>
                 <FilterChips onFilterChange={setActiveFilter} />
               </div>
 
@@ -280,13 +280,13 @@ export function HomePage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className={`p-4 rounded-3xl border flex flex-col items-center text-center shadow-sm transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700/50' : 'bg-white/50 border-gray-100'}`}>
                   <p className={`text-2xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{isLoading ? '--' : sortedStations.length}</p>
-                  <p className={`text-[9px] font-bold uppercase tracking-wider mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>Found</p>
+                  <p className={`text-[9px] font-bold uppercase tracking-wider mt-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('filter.found')}</p>
                 </div>
                 <div className={`p-4 rounded-3xl border flex flex-col items-center text-center shadow-sm transition-colors duration-500 ${theme === 'dark' ? 'bg-green-500/10 border-green-500/20' : 'bg-green-50/50 border-green-100'}`}>
                   <p className={`text-2xl font-black ${theme === 'dark' ? 'text-green-400' : 'text-green-600'}`}>
                     {isLoading ? '--' : sortedStations.filter(s => s.status === 'available').length}
                   </p>
-                  <p className={`text-[9px] font-bold uppercase tracking-wider mt-1 ${theme === 'dark' ? 'text-green-500/60' : 'text-green-600'}`}>Stock</p>
+                  <p className={`text-[9px] font-bold uppercase tracking-wider mt-1 ${theme === 'dark' ? 'text-green-500/60' : 'text-green-600'}`}>{t('filter.stock')}</p>
                 </div>
               </div>
 
@@ -296,7 +296,7 @@ export function HomePage() {
                   <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`} />
                   <input
                     type="text"
-                    placeholder="Search stations..."
+                    placeholder={t('app.search')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setIsSearchFocused(true)}
@@ -333,7 +333,7 @@ export function HomePage() {
               {/* Station List */}
               <div className="space-y-4">
                 <div className={`flex items-center justify-between pb-2 border-b transition-colors duration-500 ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}`}>
-                  <p className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>Nearby Stations</p>
+                  <p className={`text-[10px] font-bold uppercase tracking-widest ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('station.nearby')}</p>
                   <div className="flex items-center gap-1">
                     <TrendingUp className={`w-3 h-3 ${theme === 'dark' ? 'text-gray-400' : 'text-blue-600'}`} />
                     <select
@@ -341,9 +341,9 @@ export function HomePage() {
                       onChange={(e) => setSortBy(e.target.value as SortBy)}
                       className={`text-xs font-bold bg-transparent focus:outline-none cursor-pointer ${theme === 'dark' ? 'text-gray-300' : 'text-blue-600'}`}
                     >
-                      <option value="status">Status</option>
-                      <option value="distance">Distance</option>
-                      <option value="queue">Queue</option>
+                      <option value="status">{t('sort.status')}</option>
+                      <option value="distance">{t('sort.distance')}</option>
+                      <option value="queue">{t('sort.queue')}</option>
                     </select>
                   </div>
                 </div>
@@ -363,8 +363,8 @@ export function HomePage() {
                       <div className={`p-5 rounded-3xl border transition-all duration-500 ${theme === 'dark' ? 'bg-[#1a1a1a] border-[#2a2a2a] hover:bg-[#222] hover:border-[#333]' : 'bg-white border-gray-50 hover:border-blue-100 hover:shadow-2xl hover:shadow-blue-500/10'}`}>
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1 pr-2">
-                            <h3 className={`font-bold transition-colors line-clamp-1 ${theme === 'dark' ? 'text-gray-100 group-hover:text-white' : 'text-gray-900 group-hover:text-blue-600'}`}>{station.name}</h3>
-                            <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{station.address}</p>
+                            <h3 className={`font-bold transition-colors line-clamp-1 ${theme === 'dark' ? 'text-gray-100 group-hover:text-white' : 'text-gray-900 group-hover:text-blue-600'}`}>{localize(station, 'name')}</h3>
+                            <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{localize(station, 'address')}</p>
                           </div>
                           <div className={`
                             px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter
@@ -378,7 +378,7 @@ export function HomePage() {
                               ? (theme === 'dark' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-red-100 text-red-700') 
                               : ''}
                           `}>
-                            {station.status === 'available' ? 'In Stock' : station.status === 'limited' ? 'Limited' : 'Dry'}
+                            {station.status === 'available' ? t('status.available') : station.status === 'limited' ? t('status.limited') : t('status.out-of-stock')}
                           </div>
                         </div>
 
@@ -403,14 +403,14 @@ export function HomePage() {
                         <div className="flex items-center justify-between mt-4">
                           <div className="flex gap-4">
                             <div className="flex flex-col">
-                              <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Queue</span>
+                              <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">{t('station.queue')}</span>
                               <div className="flex items-center gap-1 text-xs font-bold text-gray-600">
                                 <Users className={`w-3 h-3 ${theme === 'dark' ? 'text-gray-500' : 'text-blue-500'}`} />
                                 {station.queueLength}
                               </div>
                             </div>
                             <div className="flex flex-col">
-                              <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Wait</span>
+                              <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">{t('station.wait')}</span>
                               <div className="flex items-center gap-1 text-xs font-bold text-gray-600">
                                 <Clock className={`w-3 h-3 ${theme === 'dark' ? 'text-gray-500' : 'text-blue-500'}`} />
                                 {station.waitingTime}m
@@ -434,8 +434,8 @@ export function HomePage() {
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm transition-colors ${theme === 'dark' ? 'bg-gray-800 text-gray-600' : 'bg-white text-gray-300'}`}>
                         <Search className="w-6 h-6" />
                       </div>
-                      <p className={`text-sm font-bold ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>No stations found</p>
-                      <p className={`text-[10px] uppercase tracking-widest px-6 mt-1 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`}>Try adjusting your search or filters</p>
+                      <p className={`text-sm font-bold ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{t('feed.noUpdates')}</p>
+                      <p className={`text-[10px] uppercase tracking-widest px-6 mt-1 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`}>{t('filter.adjustSearch')}</p>
                     </div>
                   )}
                 </div>
@@ -488,7 +488,7 @@ export function HomePage() {
                   className={`flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs transition-all duration-300 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white' : 'bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white'}`}
                 >
                   <Locate className="w-4 h-4" />
-                  LOCATE ME
+                  {t('view.locate')}
                 </button>
               </div>
 
@@ -531,14 +531,14 @@ export function HomePage() {
                 className={`flex items-center gap-2 px-7 py-3 rounded-[1.5rem] text-sm font-black transition-all duration-500 ${viewMode === 'map' ? (theme === 'dark' ? 'bg-white/15 text-white shadow-xl shadow-black/20' : 'bg-gray-900 text-white shadow-xl shadow-black/20') : (theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-500 hover:bg-white')}`}
               >
                 <Map className="w-4 h-4" />
-                MAP
+                {t('view.map')}
               </button>
               <button
                 onClick={() => setViewMode('list')}
                 className={`flex items-center gap-2 px-7 py-3 rounded-[1.5rem] text-sm font-black transition-all duration-500 ${viewMode === 'list' ? (theme === 'dark' ? 'bg-white/15 text-white shadow-xl shadow-black/20' : 'bg-gray-900 text-white shadow-xl shadow-black/20') : (theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-500 hover:bg-white')}`}
               >
                 <List className="w-4 h-4" />
-                LIST
+                {t('view.list')}
               </button>
             </div>
           </div>
