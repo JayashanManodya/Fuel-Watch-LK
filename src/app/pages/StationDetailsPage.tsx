@@ -1,19 +1,39 @@
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, MapPin, Clock, Users, Navigation, Share2, Fuel, TrendingUp } from 'lucide-react';
-import { mockStations, mockUpdates } from '../data/mockData';
+import { fetchFuelStations } from '../services/osmService';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import type { FuelStation, UserUpdate } from '../types';
+import { useState, useEffect } from 'react';
 
 export function StationDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Try to get station from location state first, then fallback to mock data
-  const station = (location.state?.station as FuelStation) || mockStations.find((s: FuelStation) => s.id === id);
-  
-  const stationUpdates = mockUpdates.filter((u: UserUpdate) => u.stationId === id);
+  const [station, setStation] = useState<FuelStation | null>((location.state?.station as FuelStation) || null);
+  const stationUpdates: UserUpdate[] = [];
+  const [isLoading, setIsLoading] = useState(!station);
+
+  useEffect(() => {
+    if (!station && id) {
+      fetchFuelStations().then(stations => {
+        const found = stations.find(s => s.id === id);
+        if (found) setStation(found);
+        setIsLoading(false);
+      });
+    } else {
+      setIsLoading(false);
+    }
+  }, [id, station]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!station) {
     return (

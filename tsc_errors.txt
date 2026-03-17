@@ -1,0 +1,18 @@
+src/app/components/BottomNavigation.tsx(1,10): error TS6133: 'Map' is declared but its value is never read.
+src/app/components/ui/calendar.tsx(5,27): error TS2307: Cannot find module 'react-day-picker' or its corresponding type declarations.
+src/app/components/ui/calendar.tsx(63,22): error TS7031: Binding element 'className' implicitly has an 'any' type.
+src/app/components/ui/calendar.tsx(66,23): error TS7031: Binding element 'className' implicitly has an 'any' type.
+src/app/components/ui/carousel.tsx(6,8): error TS2307: Cannot find module 'embla-carousel-react' or its corresponding type declarations.
+src/app/components/ui/chart.tsx(4,36): error TS2307: Cannot find module 'recharts' or its corresponding type declarations.
+src/app/components/ui/chart.tsx(182,23): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/app/components/ui/chart.tsx(182,29): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/app/components/ui/chart.tsx(278,21): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/app/components/ui/command.tsx(4,45): error TS2307: Cannot find module 'cmdk' or its corresponding type declarations.
+src/app/components/ui/drawer.tsx(4,43): error TS2307: Cannot find module 'vaul' or its corresponding type declarations.
+src/app/components/ui/input-otp.tsx(4,43): error TS2307: Cannot find module 'input-otp' or its corresponding type declarations.
+src/app/components/ui/input-otp.tsx(47,61): error TS2339: Property 'slots' does not exist on type '{}'.
+src/app/components/ui/resizable.tsx(5,37): error TS2307: Cannot find module 'react-resizable-panels' or its corresponding type declarations.
+src/app/components/ui/sidebar.tsx(5,10): error TS1484: 'VariantProps' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/app/components/ui/sonner.tsx(3,26): error TS2307: Cannot find module 'next-themes' or its corresponding type declarations.
+src/app/components/ui/sonner.tsx(4,29): error TS1484: 'ToasterProps' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/app/layouts/MainLayout.tsx(1,18): error TS6133: 'useLocation' is declared but its value is never read.

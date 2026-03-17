@@ -1,5 +1,4 @@
 import type { FuelStation, FuelStatus } from '../types';
-import { mockStations } from '../data/mockData';
 
 interface OSMElement {
   id: number;
@@ -32,7 +31,7 @@ export async function fetchFuelStations(): Promise<FuelStation[]> {
 
   try {
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const id = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
     const response = await fetch(`${OVERPASS_URL}?data=${encodeURIComponent(query)}`, { signal: controller.signal });
     clearTimeout(id);
@@ -70,10 +69,9 @@ export async function fetchFuelStations(): Promise<FuelStation[]> {
       };
     });
 
-    // Merge OSM data with our high-quality mock data for the best experience
-    return [...mockStations, ...osmStations];
+    return osmStations;
   } catch (error) {
-    console.error('Error fetching fuel stations, falling back to mock data:', error);
-    return mockStations;
+    console.error('Error fetching fuel stations:', error);
+    return [];
   }
 }
