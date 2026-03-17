@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, CheckCircle } from 'lucide-react';
-import { mockStations } from '../data/mockData';
-import type { FuelStatus, SubmitUpdateForm } from '../types';
+import { fetchFuelStations } from '../services/osmService';
+import type { FuelStation, FuelStatus, SubmitUpdateForm } from '../types';
 import { toast } from 'sonner';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
@@ -11,6 +11,7 @@ import { Textarea } from '../components/ui/textarea';
 export function SubmitUpdatePage() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [stations, setStations] = useState<FuelStation[]>([]);
   const [formData, setFormData] = useState<SubmitUpdateForm>({
     stationId: '',
     userName: '',
@@ -23,6 +24,10 @@ export function SubmitUpdatePage() {
     kerosene: 'not-available',
     message: '',
   });
+
+  useEffect(() => {
+    fetchFuelStations().then(setStations);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,7 +120,7 @@ export function SubmitUpdatePage() {
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-gray-900"
             >
               <option value="">Choose a station...</option>
-              {mockStations.map((station) => (
+              {stations.map((station) => (
                 <option key={station.id} value={station.id}>
                   {station.name} - {station.address}
                 </option>

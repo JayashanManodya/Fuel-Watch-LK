@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Clock, Users, Fuel, TrendingUp } from 'lucide-react';
-import { mockUpdates } from '../data/mockData';
+import { ArrowLeft, MapPin, Clock, Users, TrendingUp } from 'lucide-react';
 import type { UserUpdate } from '../types';
 import { formatDistanceToNow } from 'date-fns';
 
 export function LiveFeedPage() {
-  const [updates, setUpdates] = useState<UserUpdate[]>(mockUpdates);
-  const [isLive, setIsLive] = useState(true);
+  const [updates, setUpdates] = useState<UserUpdate[]>([]);
+  const [isLive] = useState(true);
 
   // Simulate live updates
   useEffect(() => {
