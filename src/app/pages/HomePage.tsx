@@ -392,20 +392,29 @@ export function HomePage() {
                             <h3 className={`font-bold transition-colors line-clamp-1 ${theme === 'dark' ? 'text-gray-100 group-hover:text-white' : 'text-gray-900 group-hover:text-blue-600'}`}>{localize(station, 'name')}</h3>
                             <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{localize(station, 'address')}</p>
                           </div>
-                          <div className={`
-                            px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter
-                            ${station.status === 'available' 
-                              ? (theme === 'dark' ? 'bg-card border-green-500/40 text-green-400' : 'bg-green-100 text-green-700') 
-                              : ''}
-                            ${station.status === 'limited' 
-                              ? (theme === 'dark' ? 'bg-card border-amber-500/40 text-amber-400' : 'bg-amber-100 text-amber-700') 
-                              : ''}
-                            ${station.status === 'out-of-stock' 
-                              ? (theme === 'dark' ? 'bg-card border-red-500/40 text-red-400' : 'bg-red-100 text-red-700') 
-                              : ''}
-                          `}>
-                            {station.status === 'available' ? t('status.available') : station.status === 'limited' ? t('status.limited') : t('status.out-of-stock')}
-                          </div>
+                          {(() => {
+                            const hasAnyFuel = Object.values(station.fuelTypes).some(v => v !== undefined);
+                            const effStatus = hasAnyFuel ? station.status : 'not-available';
+                            return (
+                              <div className={`
+                                px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter
+                                ${effStatus === 'available' 
+                                  ? (theme === 'dark' ? 'bg-card border-green-500/40 text-green-400' : 'bg-green-100 text-green-700') 
+                                  : ''}
+                                ${effStatus === 'limited' 
+                                  ? (theme === 'dark' ? 'bg-card border-amber-500/40 text-amber-400' : 'bg-amber-100 text-amber-700') 
+                                  : ''}
+                                ${effStatus === 'out-of-stock' 
+                                  ? (theme === 'dark' ? 'bg-card border-red-500/40 text-red-400' : 'bg-red-100 text-red-700') 
+                                  : ''}
+                                ${effStatus === 'not-available' 
+                                  ? (theme === 'dark' ? 'bg-card border-gray-500/40 text-gray-400' : 'bg-gray-100 text-gray-500') 
+                                  : ''}
+                              `}>
+                                {effStatus === 'available' ? t('status.available') : effStatus === 'limited' ? t('status.limited') : effStatus === 'not-available' ? 'N/A' : t('status.out-of-stock')}
+                              </div>
+                            );
+                          })()}
                         </div>
 
                         {/* Fuel Type Mini Indicators */}
