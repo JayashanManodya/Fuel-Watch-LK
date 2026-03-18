@@ -174,7 +174,7 @@ export function ContributePopup() {
                 தமிழ்
               </span>
             </div>
-            <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-300' : 'text-[#202124]'}`}>
+            <p className={`text-xs leading-relaxed ${isDark ? 'text-gray-300' : 'text-[#202124]'}`}>
               நீங்கள் எரிபொருள் நிலையத்தில் இருக்கும்போது, சமீபத்திய தகவல்களை பகிரவும். உங்கள்
               சிறிய உதவி ஆயிரக்கணக்கான ஓட்டுநர்களுக்கு பயனுள்ளதாக இருக்கும்!
             </p>
