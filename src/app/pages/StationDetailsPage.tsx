@@ -231,7 +231,7 @@ export function StationDetailsPage() {
               <Fuel className={`w-8 h-8 ${statusConfig.textColor}`} />
             </div>
             <div className="flex-1">
-              <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-1`}>{localize(station, 'name')} {station.stationCode ? `(${station.stationCode})` : ''}</h1>
+              <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-1`}>{localize(station, 'name')}</h1>
               <div className={`flex items-center gap-2 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-3`}>
                 <MapPin className="w-4 h-4" />
                 <span>{localize(station, 'address')}</span>

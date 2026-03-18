@@ -1,4 +1,4 @@
-import { Home, Settings, MessageCircle } from 'lucide-react';
+import { Home, Settings, MessageCircle, BookOpen } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
@@ -9,6 +9,7 @@ export function BottomNavigation() {
   const navItems = [
     { path: '/', icon: Home, label: t('nav.home') },
     { path: '/feedback', icon: MessageCircle, label: 'Feedback' },
+    { path: '/guide', icon: BookOpen, label: 'Guide' },
     { path: '/settings', icon: Settings, label: t('nav.settings') },
   ];
 

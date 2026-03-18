@@ -314,7 +314,7 @@ export function MapView({
           <!-- Header -->
           <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
             <div style="flex: 1; padding-right: 12px;">
-              <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: ${theme === 'dark' ? '#ffffff' : '#111827'}; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${station.name} ${station.stationCode ? `(${station.stationCode})` : ''}</h3>
+              <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: ${theme === 'dark' ? '#ffffff' : '#111827'}; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${station.name}</h3>
               <p style="margin: 2px 0 0; font-size: 11px; color: ${theme === 'dark' ? '#9ca3af' : '#6b7280'}; font-weight: 400; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${station.address}</p>
             </div>
             <div style="
@@ -374,14 +374,14 @@ export function MapView({
                 <span style="font-size: 8px; font-weight: 700; color: ${theme === 'dark' ? '#9ca3af' : '#6b7280'}; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">Queue</span>
                 <div style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: ${theme === 'dark' ? '#f3f4f6' : '#374151'};">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                  ${station.queueLength}
+                  ${station.petrolQueueLength ?? 0} / ${station.dieselQueueLength ?? 0}
                 </div>
               </div>
               <div style="display: flex; flex-direction: column;">
                 <span style="font-size: 8px; font-weight: 700; color: ${theme === 'dark' ? '#9ca3af' : '#6b7280'}; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">Wait</span>
                 <div style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: ${theme === 'dark' ? '#f3f4f6' : '#374151'};">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  ${station.waitingTime}m
+                  ${station.petrolWaitingTime ?? 0}m / ${station.dieselWaitingTime ?? 0}m
                 </div>
               </div>
             </div>

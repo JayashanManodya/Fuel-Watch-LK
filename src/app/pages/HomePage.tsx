@@ -7,7 +7,7 @@ import type { FuelStation } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import { fetchFuelStations } from '../services/osmService';
 import { toast, Toaster } from 'sonner';
-import { List, TrendingUp, Loader2, Search, Locate, Clock, Settings, Users, MapPin, Home, AlertCircle, Plus, MessageSquare } from 'lucide-react';
+import { List, TrendingUp, Loader2, Search, Locate, Clock, Settings, Users, MapPin, Home, AlertCircle, Plus, MessageSquare, BookOpen } from 'lucide-react';
 import type { MapBounds, SearchSuggestion } from '../types';
 
 type FuelType = 'all' | 'petrol92' | 'petrol95' | 'autoDiesel' | 'superDiesel' | 'kerosene';
@@ -383,7 +383,7 @@ export function HomePage() {
                       <div className={`p-5 rounded-3xl border transition-all duration-500 ${theme === 'dark' ? 'bg-card border-border hover:bg-accent/10 hover:border-accent/20' : 'bg-white border-gray-50 hover:border-blue-100 hover:shadow-2xl hover:shadow-blue-500/10'}`}>
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1 pr-2">
-                            <h3 className={`font-bold transition-colors line-clamp-1 ${theme === 'dark' ? 'text-gray-100 group-hover:text-white' : 'text-gray-900 group-hover:text-blue-600'}`}>{localize(station, 'name')} {station.stationCode ? `(${station.stationCode})` : ''}</h3>
+                            <h3 className={`font-bold transition-colors line-clamp-1 ${theme === 'dark' ? 'text-gray-100 group-hover:text-white' : 'text-gray-900 group-hover:text-blue-600'}`}>{localize(station, 'name')}</h3>
                             <p className={`text-[11px] font-medium line-clamp-1 mt-0.5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{localize(station, 'address')}</p>
                           </div>
                           <div className={`
@@ -469,11 +469,14 @@ export function HomePage() {
               <Link to="/" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-blue-50 text-blue-600'}`}>
                 <Home className="w-5 h-5" />
               </Link>
-              <Link to="/settings" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
-                <Settings className="w-5 h-5" />
-              </Link>
               <Link to="/feedback" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
                 <MessageSquare className="w-5 h-5" />
+              </Link>
+              <Link to="/guide" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
+                <BookOpen className="w-5 h-5" />
+              </Link>
+              <Link to="/settings" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
+                <Settings className="w-5 h-5" />
               </Link>
             </div>
           </div>
