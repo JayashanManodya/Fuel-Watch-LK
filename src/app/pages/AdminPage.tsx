@@ -436,7 +436,7 @@ export function AdminPage() {
                       <p>No community requests yet.</p>
                     </div>
                  ) : (
-                    <div className="grid gap-4">
+                    <div className="grid gap-4 pr-1" style={{ maxHeight: '600px', overflowY: 'auto' }}>
                       {requests.sort((a,b) => b.id - a.id).map(req => (
                         <Card key={req.id} className={`${req.status === 'pending' ? 'border-l-4 border-l-blue-500' : 'opacity-60'}`}>
                           <CardContent className="p-4">
