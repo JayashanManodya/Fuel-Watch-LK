@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Globe, ChevronRight, CheckCircle2, Home, Settings, MessageSquare, ExternalLink, Code, Info } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Globe, ChevronRight, CheckCircle2, Home, Settings, MessageSquare, Info } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { toast, Toaster } from 'sonner';
 import { MapView } from '../components/MapView';
