@@ -266,9 +266,17 @@ export function MapView({
           return '#FFAB00'; // vibrant amber-A700
         case 'out-of-stock':
           return '#D50000'; // vibrant red-A700 (no fuel)
+        case 'not-available':
+          return '#757575'; // gray — station has no fuel type data (N/A)
         default:
           return '#757575'; // gray
       }
+    };
+
+    // Returns 'not-available' when all fuel types are N/A (undefined), otherwise returns the station status
+    const getEffectiveStatus = (station: FuelStation) => {
+      const hasAnyFuelData = Object.values(station.fuelTypes).some((v) => v !== undefined);
+      return hasAnyFuelData ? station.status : 'not-available';
     };
 
     // Create custom icon function
@@ -294,8 +302,9 @@ export function MapView({
 
     // Add markers for each station
     stations.forEach((station) => {
+      const effectiveStatus = getEffectiveStatus(station);
       const marker = L.marker(station.coordinates, {
-        icon: createCustomIcon(station.status),
+        icon: createCustomIcon(effectiveStatus),
       }).addTo(mapInstanceRef.current!);
 
       if (variant === 'select') {
@@ -329,13 +338,15 @@ export function MapView({
               text-transform: uppercase; 
               letter-spacing: -0.01em;
               white-space: nowrap;
-              ${station.status === 'available' 
+              ${effectiveStatus === 'available' 
                 ? theme === 'dark' ? 'background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2);' : 'background: #dcfce7; color: #15803d;' 
-                : station.status === 'limited' 
-                ? theme === 'dark' ? 'background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2);' : 'background: #fef3c7; color: #b45309;' 
+                : effectiveStatus === 'limited' 
+                ? theme === 'dark' ? 'background: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2);' : 'background: #fef3c7; color: #b45309;'
+                : effectiveStatus === 'not-available'
+                ? theme === 'dark' ? 'background: rgba(117, 117, 117, 0.15); color: #9ca3af; border: 1px solid rgba(117, 117, 117, 0.3);' : 'background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb;'
                 : theme === 'dark' ? 'background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2);' : 'background: #fee2e2; color: #b91c1c;'}
             ">
-              ${station.status === 'available' ? 'In Stock' : station.status === 'limited' ? 'Limited' : 'Dry'}
+              ${effectiveStatus === 'available' ? 'In Stock' : effectiveStatus === 'limited' ? 'Limited' : effectiveStatus === 'not-available' ? 'N/A' : 'Dry'}
             </div>
           </div>
 
