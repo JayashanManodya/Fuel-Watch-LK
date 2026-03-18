@@ -11,19 +11,36 @@ interface MapViewProps {
   zoom?: number;
   onBoundsChange?: (center: [number, number], zoom: number, bounds: MapBounds) => void;
   userLocation?: [number, number] | null;
+  onLocationSelect?: (lat: number, lng: number) => void;
+  selectedLocation?: [number, number] | null;
 }
 
-export function MapView({ stations, onStationClick, center, zoom = 13, onBoundsChange, userLocation }: MapViewProps) {
+export function MapView({ 
+  stations, 
+  onStationClick, 
+  center, 
+  zoom = 13, 
+  onBoundsChange, 
+  userLocation,
+  onLocationSelect,
+  selectedLocation
+}: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const userMarkerRef = useRef<L.CircleMarker | null>(null);
+  const selectionMarkerRef = useRef<L.Marker | null>(null);
   const { theme } = useTheme();
   const lastCenterPropRef = useRef<string>("");
   const onBoundsChangeRef = useRef(onBoundsChange);
   const onStationClickRef = useRef(onStationClick);
+  const onLocationSelectRef = useRef(onLocationSelect);
   const stationsRef = useRef(stations);
+
+  useEffect(() => {
+    onLocationSelectRef.current = onLocationSelect;
+  }, [onLocationSelect]);
 
   useEffect(() => {
     stationsRef.current = stations;
@@ -80,6 +97,12 @@ export function MapView({ stations, onStationClick, center, zoom = 13, onBoundsC
         }
       });
 
+      mapInstanceRef.current.on('click', (e: L.LeafletMouseEvent) => {
+        if (onLocationSelectRef.current) {
+          onLocationSelectRef.current(e.latlng.lat, e.latlng.lng);
+        }
+      });
+
       // Handle custom popup button click
       mapInstanceRef.current.on('popupopen', (e) => {
         const popup = e.popup;
@@ -104,6 +127,7 @@ export function MapView({ stations, onStationClick, center, zoom = 13, onBoundsC
       if (mapInstanceRef.current) {
         mapInstanceRef.current.off('moveend');
         mapInstanceRef.current.off('popupopen');
+        mapInstanceRef.current.off('click');
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
@@ -161,6 +185,49 @@ export function MapView({ stations, onStationClick, center, zoom = 13, onBoundsC
       userMarkerRef.current.setLatLng(userLocation);
     }
   }, [userLocation]);
+
+  // Handle Selection Marker
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    if (!selectedLocation) {
+      if (selectionMarkerRef.current) {
+        selectionMarkerRef.current.remove();
+        selectionMarkerRef.current = null;
+      }
+      return;
+    }
+
+    const selectionIcon = L.divIcon({
+      html: `
+        <div style="position: relative; width: 32px; height: 40px;">
+          <div style="position: absolute; top: -10px; left: -10px; width: 52px; height: 52px; background: rgba(37, 99, 235, 0.2); border-radius: 50%; animation: pulse 2s infinite;"></div>
+          <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M16 0C7.163 0 0 7.163 0 16C0 28 16 40 16 40C16 40 32 28 32 16C32 7.163 24.837 0 16 0Z" fill="#2563eb"/>
+            <circle cx="16" cy="16" r="6" fill="white"/>
+          </svg>
+          <style>
+            @keyframes pulse {
+              0% { transform: scale(0.6); opacity: 1; }
+              100% { transform: scale(1.2); opacity: 0; }
+            }
+          </style>
+        </div>
+      `,
+      className: 'selection-marker',
+      iconSize: [32, 40],
+      iconAnchor: [16, 40],
+    });
+
+    if (!selectionMarkerRef.current) {
+      selectionMarkerRef.current = L.marker(selectedLocation, {
+        icon: selectionIcon,
+        zIndexOffset: 1000
+      }).addTo(mapInstanceRef.current);
+    } else {
+      selectionMarkerRef.current.setLatLng(selectedLocation);
+    }
+  }, [selectedLocation]);
 
   useEffect(() => {
     if (!mapInstanceRef.current) return;

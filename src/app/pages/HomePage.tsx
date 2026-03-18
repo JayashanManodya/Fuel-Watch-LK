@@ -7,10 +7,10 @@ import type { FuelStation } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import { fetchFuelStations } from '../services/osmService';
 import { toast, Toaster } from 'sonner';
-import { List, Map, TrendingUp, Loader2, Search, Locate, Clock, Settings, Users, MapPin, Home, MessageCircle, AlertCircle, Plus, MessageSquare } from 'lucide-react';
+import { List, Map, TrendingUp, Loader2, Search, Locate, Clock, Settings, Users, MapPin, Home, AlertCircle, Plus, MessageSquare } from 'lucide-react';
 import type { MapBounds, SearchSuggestion } from '../types';
 
-type FuelType = 'all' | 'petrol92' | 'petrol95' | 'diesel' | 'kerosene';
+type FuelType = 'all' | 'petrol92' | 'petrol95' | 'autoDiesel' | 'superDiesel' | 'kerosene';
 type SortBy = 'status' | 'distance' | 'queue';
 
 export function HomePage() {
@@ -225,7 +225,7 @@ export function HomePage() {
       return a.distance - b.distance;
     }
     if (sortBy === 'queue') {
-      return a.queueLength - b.queueLength;
+      return (a.petrolQueueLength + a.dieselQueueLength) - (b.petrolQueueLength + b.dieselQueueLength);
     }
     // Sort by status: available > limited > out-of-stock
     const statusOrder = { available: 0, limited: 1, 'out-of-stock': 2 };
@@ -417,7 +417,7 @@ export function HomePage() {
                               `}
                             >
                               <div className={`w-1 h-1 rounded-full ${status === 'available' ? 'bg-green-500' : status === 'limited' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                              {type.replace('petrol', 'P').replace('diesel', 'DSL').replace('kerosene', 'KRS')}
+                              {type.replace('petrol', 'P').replace('autoDiesel', 'AD').replace('superDiesel', 'SD').replace('kerosene', 'KRS')}
                             </div>
                           ))}
                         </div>
@@ -428,14 +428,14 @@ export function HomePage() {
                               <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">{t('station.queue')}</span>
                               <div className="flex items-center gap-1 text-xs font-bold text-gray-600">
                                 <Users className={`w-3 h-3 ${theme === 'dark' ? 'text-gray-500' : 'text-blue-500'}`} />
-                                {station.queueLength}
+                                {station.petrolQueueLength} / {station.dieselQueueLength}
                               </div>
                             </div>
                             <div className="flex flex-col">
                               <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">{t('station.wait')}</span>
                               <div className="flex items-center gap-1 text-xs font-bold text-gray-600">
                                 <Clock className={`w-3 h-3 ${theme === 'dark' ? 'text-gray-500' : 'text-blue-500'}`} />
-                                {station.waitingTime}m
+                                {station.petrolWaitingTime}m / {station.dieselWaitingTime}m
                               </div>
                             </div>
                           </div>

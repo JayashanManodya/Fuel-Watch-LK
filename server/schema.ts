@@ -15,10 +15,13 @@ export const stations = pgTable('stations', {
   status: varchar('status', { length: 50 }).default('available'),
   petrol92Status: varchar('petrol_92_status', { length: 50 }).default('not-available'),
   petrol95Status: varchar('petrol_95_status', { length: 50 }).default('not-available'),
-  dieselStatus: varchar('diesel_status', { length: 50 }).default('not-available'),
+  autoDieselStatus: varchar('auto_diesel_status', { length: 50 }).default('not-available'),
+  superDieselStatus: varchar('super_diesel_status', { length: 50 }).default('not-available'),
   keroseneStatus: varchar('kerosene_status', { length: 50 }).default('not-available'),
-  queueLength: integer('queue_length').default(0),
-  waitingTime: integer('waiting_time').default(0),
+  petrolQueueLength: integer('petrol_queue_length').default(0),
+  petrolWaitingTime: integer('petrol_waiting_time').default(0),
+  dieselQueueLength: integer('diesel_queue_length').default(0),
+  dieselWaitingTime: integer('diesel_waiting_time').default(0),
   lastUpdated: timestamp('last_updated').defaultNow(),
 });
 
@@ -30,10 +33,15 @@ export const fuelUpdates = pgTable('fuel_updates', {
   status: varchar('status', { length: 50 }),
   petrol92: varchar('petrol92', { length: 50 }),
   petrol95: varchar('petrol95', { length: 50 }),
-  diesel: varchar('diesel', { length: 50 }),
+  autoDiesel: varchar('auto_diesel', { length: 50 }),
+  superDiesel: varchar('super_diesel', { length: 50 }),
   kerosene: varchar('kerosene', { length: 50 }),
   queueLength: integer('queue_length'),
   waitingTime: integer('waiting_time'),
+  petrolQueueLength: integer('petrol_queue_length'),
+  petrolWaitingTime: integer('petrol_waiting_time'),
+  dieselQueueLength: integer('diesel_queue_length'),
+  dieselWaitingTime: integer('diesel_waiting_time'),
   timestamp: timestamp('timestamp').defaultNow(),
 });
 

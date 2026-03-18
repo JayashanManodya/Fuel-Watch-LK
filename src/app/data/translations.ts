@@ -39,6 +39,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'fuel.petrol92': 'Petrol 92',
     'fuel.petrol95': 'Petrol 95',
     'fuel.diesel': 'Auto Diesel',
+    'fuel.superDiesel': 'Super Diesel',
     'fuel.kerosene': 'Kerosene',
 
     // Station Details
@@ -141,6 +142,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'fuel.petrol92': 'පෙට්‍රල් 92',
     'fuel.petrol95': 'පෙට්‍රල් 95',
     'fuel.diesel': 'ඔටෝ ඩීසල්',
+    'fuel.superDiesel': 'සුපිරි ඩීසල්',
     'fuel.kerosene': 'භූමිතෙල්',
 
     // Station Details
@@ -242,6 +244,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'fuel.petrol92': 'பெற்றோல் 92',
     'fuel.petrol95': 'பெற்றோல் 95',
     'fuel.diesel': 'ஓட்டோ டீசல்',
+    'fuel.superDiesel': 'சூப்பர் டீசல்',
     'fuel.kerosene': 'மண்ணெண்ணெய்',
 
     // Station Details
