@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import {ArrowLeft, Send, CheckCircle, MapPin, Plus, AlertCircle} from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { fetchFuelStations } from '../services/osmService';
+import { API_BASE } from '../services/api';
 import type { FuelStation } from '../types';
 import { toast } from 'sonner';
 import { Input } from '../components/ui/input';
@@ -97,7 +98,7 @@ export function FeedbackPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/feedback/request', {
+      const response = await fetch(`${API_BASE}/feedback/request`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

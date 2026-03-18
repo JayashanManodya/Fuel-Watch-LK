@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import type { FuelStation, UserUpdate, FuelStatus, SubmitUpdateForm } from '../types';
 import { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { API_BASE } from '../services/api';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
@@ -141,7 +142,7 @@ export function StationDetailsPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/stations/${id}/updates`, {
+      const response = await fetch(`${API_BASE}/stations/${id}/updates`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { fetchFuelStations } from '../services/osmService';
+import { API_BASE } from '../services/api';
 import type { FuelStation } from '../types';
 import { toast } from 'sonner';
 import { Input } from '../components/ui/input';
@@ -83,7 +84,7 @@ export function AdminPage() {
     
     setIsRequestsLoading(true);
     try {
-      const response = await fetch('/api/admin/requests', {
+      const response = await fetch(`${API_BASE}/admin/requests`, {
         headers: { 'Authorization': auth }
       });
       if (response.ok) {
@@ -106,7 +107,7 @@ export function AdminPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/admin/login', {
+      const response = await fetch(`${API_BASE}/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -170,8 +171,8 @@ export function AdminPage() {
 
     try {
       const url = isEditing 
-        ? `/api/admin/stations/${isEditing}` 
-        : '/api/admin/stations';
+        ? `${API_BASE}/admin/stations/${isEditing}` 
+        : `${API_BASE}/admin/stations`;
       
       const method = isEditing ? 'PATCH' : 'POST';
 
@@ -205,7 +206,7 @@ export function AdminPage() {
     if (!auth) return;
 
     try {
-      const response = await fetch(`/api/admin/stations/${id}`, {
+      const response = await fetch(`${API_BASE}/admin/stations/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': auth }
       });
@@ -226,7 +227,7 @@ export function AdminPage() {
     if (!auth) return;
 
     try {
-      const response = await fetch(`/api/admin/requests/${id}`, {
+      const response = await fetch(`${API_BASE}/admin/requests/${id}`, {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',

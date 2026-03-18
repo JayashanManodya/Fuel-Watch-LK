@@ -9,7 +9,7 @@ interface OSMElement {
 }
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
-const API_URL = '/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 function mapDbToFuelStation(dbStation: any): FuelStation {
   return {
