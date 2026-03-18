@@ -79,33 +79,33 @@ export function StationDetailsPage() {
         return {
           color: 'bg-green-500',
           label: t('status.available'),
-          textColor: 'text-green-700',
-          bgColor: 'bg-green-50',
-          borderColor: 'border-green-200',
+          textColor: theme === 'dark' ? 'text-green-400' : 'text-green-700',
+          bgColor: theme === 'dark' ? 'bg-secondary/40' : 'bg-green-50',
+          borderColor: theme === 'dark' ? 'border-green-500/20' : 'border-green-200',
         };
       case 'limited':
         return {
           color: 'bg-amber-500',
           label: t('status.limited'),
-          textColor: 'text-amber-700',
-          bgColor: 'bg-amber-50',
-          borderColor: 'border-amber-200',
+          textColor: theme === 'dark' ? 'text-amber-400' : 'text-amber-700',
+          bgColor: theme === 'dark' ? 'bg-secondary/40' : 'bg-amber-50',
+          borderColor: theme === 'dark' ? 'border-amber-500/20' : 'border-amber-200',
         };
       case 'out-of-stock':
         return {
           color: 'bg-red-500',
           label: t('status.out-of-stock'),
-          textColor: 'text-red-700',
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-200',
+          textColor: theme === 'dark' ? 'text-red-400' : 'text-red-700',
+          bgColor: theme === 'dark' ? 'bg-secondary/40' : 'bg-red-50',
+          borderColor: theme === 'dark' ? 'border-red-500/20' : 'border-red-200',
         };
       default:
         return {
           color: 'bg-gray-500',
           label: t('status.unknown'),
-          textColor: 'text-gray-700',
-          bgColor: 'bg-gray-50',
-          borderColor: 'border-gray-200',
+          textColor: theme === 'dark' ? 'text-gray-400' : 'text-gray-700',
+          bgColor: theme === 'dark' ? 'bg-secondary/40' : 'bg-gray-50',
+          borderColor: theme === 'dark' ? 'border-gray-500/20' : 'border-gray-200',
         };
     }
   };
@@ -446,7 +446,7 @@ export function StationDetailsPage() {
           <div className="grid grid-cols-2 gap-3">
             {station.fuelTypes?.petrol92 && (
               <div className={`p-4 rounded-xl border ${getStatusConfig(station.fuelTypes.petrol92).bgColor} ${getStatusConfig(station.fuelTypes.petrol92).borderColor}`}>
-                <p className="text-sm font-medium text-gray-700 mb-1">{t('fuel.petrol92')}</p>
+                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('fuel.petrol92')}</p>
                 <p className={`text-lg font-bold ${getStatusConfig(station.fuelTypes.petrol92).textColor}`}>
                   {getStatusConfig(station.fuelTypes.petrol92).label}
                 </p>
@@ -454,7 +454,7 @@ export function StationDetailsPage() {
             )}
             {station.fuelTypes?.petrol95 && (
               <div className={`p-4 rounded-xl border ${getStatusConfig(station.fuelTypes.petrol95).bgColor} ${getStatusConfig(station.fuelTypes.petrol95).borderColor}`}>
-                <p className="text-sm font-medium text-gray-700 mb-1">{t('fuel.petrol95')}</p>
+                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('fuel.petrol95')}</p>
                 <p className={`text-lg font-bold ${getStatusConfig(station.fuelTypes.petrol95).textColor}`}>
                   {getStatusConfig(station.fuelTypes.petrol95).label}
                 </p>
@@ -462,7 +462,7 @@ export function StationDetailsPage() {
             )}
              {station.fuelTypes?.autoDiesel && (
               <div className={`p-4 rounded-xl border ${getStatusConfig(station.fuelTypes.autoDiesel).bgColor} ${getStatusConfig(station.fuelTypes.autoDiesel).borderColor}`}>
-                <p className="text-sm font-medium text-gray-700 mb-1">{t('fuel.diesel')}</p>
+                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('fuel.diesel')}</p>
                 <p className={`text-lg font-bold ${getStatusConfig(station.fuelTypes.autoDiesel).textColor}`}>
                   {getStatusConfig(station.fuelTypes.autoDiesel).label}
                 </p>
@@ -470,7 +470,7 @@ export function StationDetailsPage() {
             )}
             {station.fuelTypes?.superDiesel && (
               <div className={`p-4 rounded-xl border ${getStatusConfig(station.fuelTypes.superDiesel).bgColor} ${getStatusConfig(station.fuelTypes.superDiesel).borderColor}`}>
-                <p className="text-sm font-medium text-gray-700 mb-1">{t('fuel.superDiesel')}</p>
+                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('fuel.superDiesel')}</p>
                 <p className={`text-lg font-bold ${getStatusConfig(station.fuelTypes.superDiesel).textColor}`}>
                   {getStatusConfig(station.fuelTypes.superDiesel).label}
                 </p>
@@ -478,7 +478,7 @@ export function StationDetailsPage() {
             )}
             {station.fuelTypes?.kerosene && (
               <div className={`p-4 rounded-xl border ${getStatusConfig(station.fuelTypes.kerosene).bgColor} ${getStatusConfig(station.fuelTypes.kerosene).borderColor}`}>
-                <p className="text-sm font-medium text-gray-700 mb-1">{t('fuel.kerosene')}</p>
+                <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} mb-1`}>{t('fuel.kerosene')}</p>
                 <p className={`text-lg font-bold ${getStatusConfig(station.fuelTypes.kerosene).textColor}`}>
                   {getStatusConfig(station.fuelTypes.kerosene).label}
                 </p>
