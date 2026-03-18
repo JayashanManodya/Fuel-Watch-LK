@@ -7,7 +7,7 @@ import type { FuelStation } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import { fetchFuelStations } from '../services/osmService';
 import { toast, Toaster } from 'sonner';
-import { List, Map, TrendingUp, Loader2, Search, Locate, Clock, Settings, Users, MapPin, Activity, Home, PlusCircle, MessageCircle, AlertCircle, Plus, MessageSquare } from 'lucide-react';
+import { List, Map, TrendingUp, Loader2, Search, Locate, Clock, Settings, Users, MapPin, Home, MessageCircle, AlertCircle, Plus, MessageSquare } from 'lucide-react';
 import type { MapBounds, SearchSuggestion } from '../types';
 
 type FuelType = 'all' | 'petrol92' | 'petrol95' | 'diesel' | 'kerosene';
@@ -470,12 +470,6 @@ export function HomePage() {
             <div className="flex items-center justify-between px-2">
               <Link to="/" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-blue-50 text-blue-600'}`}>
                 <Home className="w-5 h-5" />
-              </Link>
-              <Link to="/" onClick={() => toast.info(t('station.selectToUpdate') || 'Select a station on the map to submit an update')} className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
-                <PlusCircle className="w-5 h-5" />
-              </Link>
-              <Link to="/feed" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
-                <Activity className="w-5 h-5" />
               </Link>
               <Link to="/settings" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
                 <Settings className="w-5 h-5" />

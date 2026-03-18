@@ -26,7 +26,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.home': 'Home',
     'nav.map': 'Map',
     'nav.submit': 'Submit Update',
-    'nav.feed': 'Live Feed',
     'nav.settings': 'Settings',
 
     // Fuel Status
@@ -70,6 +69,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.info': 'Information',
     'settings.about': 'Fuel Watch LK',
     'settings.version': 'Version',
+    'settings.developedBy': 'Developed By',
     'settings.enabled': 'Enabled',
     'settings.disabled': 'Disabled',
     'settings.langChanged': 'Language changed to',
@@ -94,15 +94,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'submit.errorFields': 'Please fill in all required fields',
     'submit.out': 'Out',
     'submit.notAvailable': 'N/A',
-
-    // Live Feed
-    'feed.title': 'Community Feed',
-    'feed.subtitle': 'Real-time user updates',
-    'feed.activity': 'Community Activity',
-    'feed.updates': 'updates in the last hour',
-    'feed.noUpdates': 'No recent updates',
-    'feed.loadMore': 'Load More Updates',
-    'feed.live': 'LIVE',
 
     // Locations
     'location.ratnapura': 'Ratnapura',
@@ -137,7 +128,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.home': 'මුල් පිටුව',
     'nav.map': 'සිතියම',
     'nav.submit': 'යාවත්කාලීන කරන්න',
-    'nav.feed': 'සජීවී පුවත්',
     'nav.settings': 'සැකසුම්',
 
     // Fuel Status
@@ -181,6 +171,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.info': 'තොරතුරු',
     'settings.about': 'Fuel Watch LK ගැන',
     'settings.version': 'අනුවාදය',
+    'settings.developedBy': 'නිර්මාණය කළේ',
     'settings.enabled': 'සක්‍රීයයි',
     'settings.disabled': 'අක්‍රීයයි',
     'settings.langChanged': 'භාෂාව වෙනස් කරන ලදි:',
@@ -205,15 +196,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'submit.errorFields': 'කරුණාකර අවශ්‍ය සියලුම ක්ෂේත්‍ර පුරවන්න',
     'submit.out': 'ඉවරයි',
     'submit.notAvailable': 'නැත',
-
-    // Live Feed
-    'feed.title': 'සජීවී යාවත්කාලීන',
-    'feed.subtitle': 'පරිශීලකයින්ගෙන් සජීවී තොරතුරු',
-    'feed.activity': 'ප්‍රජා ක්‍රියාකාරකම්',
-    'feed.updates': 'පසුගිය පැය තුළ යාවත්කාලීන කිරීම්',
-    'feed.noUpdates': 'මෑතකදී යාවත්කාලීන කිරීම් නැත',
-    'feed.loadMore': 'තවත් තොරතුරු පෙන්වන්න',
-    'feed.live': 'සජීවී',
 
     // Locations
     'location.ratnapura': 'රත්නපුර',
@@ -247,7 +229,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.home': 'முகப்பு',
     'nav.map': 'வரைபடம்',
     'nav.submit': 'தகவலைப் பகிரவும்',
-    'nav.feed': 'நேரடித் தகவல்கள்',
     'nav.settings': 'அமைப்புகள்',
 
     // Fuel Status
@@ -291,6 +272,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'settings.info': 'தகவல்',
     'settings.about': 'Fuel Watch LK பற்றி',
     'settings.version': 'பதிப்பு',
+    'settings.developedBy': 'உருவாக்கியவர்',
     'settings.enabled': 'செயலில் உள்ளது',
     'settings.disabled': 'செயலிழக்கச் செய்யப்பட்டுள்ளது',
     'settings.langChanged': 'மொழி மாற்றப்பட்டது:',
@@ -315,15 +297,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'submit.errorFields': 'தயவுசெய்து தேவையான அனைத்து புலங்களையும் நிரப்பவும்',
     'submit.out': 'இல்லை',
     'submit.notAvailable': 'இல்லை',
-
-    // Live Feed
-    'feed.title': 'நேரடித் தகவல்கள்',
-    'feed.subtitle': 'பயனர்களிடமிருந்து பெறப்பட்ட சமீபத்திய தகவல்கள்',
-    'feed.noUpdates': 'தகவல்கள் எதுவும் இல்லை',
-    'feed.activity': 'சமூக செயல்பாடு',
-    'feed.updates': 'கடந்த ஒரு மணி நேரத்தில் புதுப்பிப்புகள்',
-    'feed.loadMore': 'மேலும் புதுப்பிப்புகளை ஏற்றவும்',
-    'feed.live': 'நேரலை',
 
     // Locations
     'location.ratnapura': 'இரத்தினபுரி',

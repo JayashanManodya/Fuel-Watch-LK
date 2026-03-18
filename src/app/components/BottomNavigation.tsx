@@ -1,4 +1,4 @@
-import { PlusCircle, Activity, Home, Settings, MessageCircle } from 'lucide-react';
+import { Home, Settings, MessageCircle } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { toast } from 'sonner';
@@ -9,8 +9,6 @@ export function BottomNavigation() {
 
   const navItems = [
     { path: '/', icon: Home, label: t('nav.home') },
-    { path: '/', icon: PlusCircle, label: t('nav.submit'), isSubmitToken: true },
-    { path: '/feed', icon: Activity, label: t('nav.feed') },
     { path: '/feedback', icon: MessageCircle, label: 'Feedback' },
     { path: '/settings', icon: Settings, label: t('nav.settings') },
   ];

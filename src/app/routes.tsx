@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
 import { HomePage } from "./pages/HomePage";
-import { LiveFeedPage } from "./pages/LiveFeedPage";
 import { StationDetailsPage } from "./pages/StationDetailsPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { AdminPage } from "./pages/AdminPage";
@@ -13,7 +12,6 @@ export const router = createBrowserRouter([
     Component: MainLayout,
     children: [
       { index: true, Component: HomePage },
-      { path: "feed", Component: LiveFeedPage },
       { path: "station/:id", Component: StationDetailsPage },
       { path: "settings", Component: SettingsPage },
       { path: "admin", Component: AdminPage },
