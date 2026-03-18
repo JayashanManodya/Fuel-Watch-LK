@@ -86,27 +86,26 @@ export async function fetchFuelStations(): Promise<FuelStation[]> {
       const addressSi = el.tags?.['addr:street:si'] ? `${el.tags['addr:street:si']}, ${el.tags['addr:city:si'] || ''}` : undefined;
       const addressTa = el.tags?.['addr:street:ta'] ? `${el.tags['addr:street:ta']}, ${el.tags['addr:city:ta'] || ''}` : undefined;
 
-      const statuses: FuelStatus[] = ['available', 'limited', 'out-of-stock'];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      const defaultStatus: FuelStatus = 'out-of-stock';
 
       return {
         id: el.id.toString(), // osmId
         name,
         nameSi,
         nameTa,
-        status: randomStatus,
+        status: defaultStatus,
         lastUpdated: 'Live from Map',
-        queueLength: Math.floor(Math.random() * 20),
-        waitingTime: Math.floor(Math.random() * 30),
+        queueLength: 0,
+        waitingTime: 0,
         coordinates: [lat, lon] as [number, number],
         address,
         addressSi,
         addressTa,
         fuelTypes: {
-          petrol92: randomStatus,
-          petrol95: (Math.random() > 0.4 ? 'available' : (Math.random() > 0.5 ? 'limited' : 'out-of-stock')) as FuelStatus,
-          diesel: (Math.random() > 0.3 ? 'available' : (Math.random() > 0.5 ? 'limited' : 'out-of-stock')) as FuelStatus,
-          kerosene: (Math.random() > 0.7 ? 'available' : 'out-of-stock') as FuelStatus,
+          petrol92: 'not-available',
+          petrol95: 'not-available',
+          diesel: 'not-available',
+          kerosene: 'not-available',
         },
       };
     });

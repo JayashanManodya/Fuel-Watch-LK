@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { db } from './db.js';
-import { stations, fuelUpdates } from './schema.js';
+import { stations, fuelUpdates, stationRequests } from './schema.js';
 import { eq } from 'drizzle-orm';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -96,13 +96,14 @@ app.post('/api/stations/seed', async (req, res) => {
         address: s.address,
         addressSi: s.addressSi,
         addressTa: s.addressTa,
-        status: s.status,
+        status: s.status || 'out-of-stock',
         petrol92Status: s.fuelTypes?.petrol92 || 'not-available',
         petrol95Status: s.fuelTypes?.petrol95 || 'not-available',
         dieselStatus: s.fuelTypes?.diesel || 'not-available',
         keroseneStatus: s.fuelTypes?.kerosene || 'not-available',
         queueLength: s.queueLength || 0,
         waitingTime: s.waitingTime || 0,
+        lastUpdated: new Date(),
       }).onConflictDoNothing({ target: stations.osmId })
     });
 
@@ -110,6 +111,188 @@ app.post('/api/stations/seed', async (req, res) => {
     res.json({ success: true, count: newStations.length });
   } catch (error) {
     console.error('Error seeding stations:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST to reset all mock data
+app.post('/api/stations/reset', async (req, res) => {
+  try {
+    // Clear all updates
+    await db.delete(fuelUpdates);
+
+    // Reset all stations to N/A and 0
+    await db.update(stations).set({
+      status: 'out-of-stock',
+      petrol92Status: 'not-available',
+      petrol95Status: 'not-available',
+      dieselStatus: 'not-available',
+      keroseneStatus: 'not-available',
+      queueLength: 0,
+      waitingTime: 0,
+      lastUpdated: new Date(),
+    });
+
+    res.json({ success: true, message: 'All mock data reset to N/A and 0' });
+  } catch (error) {
+    console.error('Error resetting data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin Authentication Middleware (Basic)
+const checkAdminAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const [username, password] = Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Invalid credentials' });
+  }
+};
+
+// Admin Login Check
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ error: 'Invalid credentials' });
+  }
+});
+
+// Admin - Add new station
+app.post('/api/admin/stations', checkAdminAuth, async (req, res) => {
+  try {
+    const { name, nameSi, nameTa, lat, lng, address, addressSi, addressTa, stationCode } = req.body;
+    
+    const [newStation] = await db.insert(stations).values({
+      name,
+      nameSi,
+      nameTa,
+      lat,
+      lng,
+      address,
+      addressSi,
+      addressTa,
+      stationCode: stationCode || `ADMIN-${Date.now()}`,
+      status: 'out-of-stock',
+      petrol92Status: 'not-available',
+      petrol95Status: 'not-available',
+      dieselStatus: 'not-available',
+      keroseneStatus: 'not-available',
+      queueLength: 0,
+      waitingTime: 0,
+      lastUpdated: new Date(),
+    }).returning();
+
+    res.json(newStation);
+  } catch (error) {
+    console.error('Error creating station:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin - Update station details
+app.patch('/api/admin/stations/:id', checkAdminAuth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const updates = req.body;
+
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
+
+    await db.update(stations)
+      .set({
+        ...updates,
+        lastUpdated: new Date(),
+      })
+      .where(eq(stations.id, id));
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating station:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin - Delete station
+app.delete('/api/admin/stations/:id', checkAdminAuth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
+
+    await db.delete(stations).where(eq(stations.id, id));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting station:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin - Fetch all station requests
+app.get('/api/admin/requests', checkAdminAuth, async (req, res) => {
+  try {
+    const requests = await db.select().from(stationRequests);
+    res.json(requests);
+  } catch (error) {
+    console.error('Error fetching requests:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Admin - Update request status
+app.patch('/api/admin/requests/:id', checkAdminAuth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { status } = req.body;
+    if (isNaN(id)) return res.status(400).json({ error: 'Invalid ID' });
+
+    await db.update(stationRequests)
+      .set({ status })
+      .where(eq(stationRequests.id, id));
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating request:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Public - Submit a station request/feedback
+app.post('/api/feedback/request', async (req, res) => {
+  try {
+    const { type, stationId, name, nameSi, nameTa, lat, lng, address, addressSi, addressTa, stationCode, message } = req.body;
+    
+    // Ensure stationId is either a number or null
+    const parsedStationId = stationId && stationId !== "" ? parseInt(stationId.toString()) : null;
+
+    await db.insert(stationRequests).values({
+      type,
+      stationId: parsedStationId,
+      name,
+      nameSi,
+      nameTa,
+      lat,
+      lng,
+      address,
+      addressSi,
+      addressTa,
+      stationCode,
+      message,
+      status: 'pending'
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error submitting request:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

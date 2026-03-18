@@ -7,7 +7,7 @@ import type { FuelStation } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import { fetchFuelStations } from '../services/osmService';
 import { toast, Toaster } from 'sonner';
-import { List, Map, TrendingUp, Loader2, Search, Locate, Clock, Settings, Users, MapPin, Activity, Home, PlusCircle } from 'lucide-react';
+import { List, Map, TrendingUp, Loader2, Search, Locate, Clock, Settings, Users, MapPin, Activity, Home, PlusCircle, MessageCircle, AlertCircle, Plus, MessageSquare } from 'lucide-react';
 import type { MapBounds, SearchSuggestion } from '../types';
 
 type FuelType = 'all' | 'petrol92' | 'petrol95' | 'diesel' | 'kerosene';
@@ -330,6 +330,28 @@ export function HomePage() {
                 )}
               </div>
 
+              {/* Community Feedback Prompt */}
+              <div className={`p-5 rounded-3xl border border-dashed flex flex-col items-center text-center gap-3 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#1a1a1a]/40 border-gray-700' : 'bg-blue-50/30 border-blue-200'}`}>
+                <div className="flex -space-x-2">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${theme === 'dark' ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-600'}`}>
+                    <Plus className="w-4 h-4" />
+                  </div>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${theme === 'dark' ? 'bg-orange-500/20 text-orange-400' : 'bg-orange-100 text-orange-600'}`}>
+                    <AlertCircle className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-bold">Missing a station or see a mistake?</p>
+                  <p className={`text-[10px] leading-relaxed ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>Help the community by requesting an update or adding a missing fuel station.</p>
+                </div>
+                <Link 
+                  to="/feedback"
+                  className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all ${theme === 'dark' ? 'bg-white/10 hover:bg-white/20 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20'}`}
+                >
+                  Request / Feedback
+                </Link>
+              </div>
+
               {/* Station List */}
               <div className="space-y-4">
                 <div className={`flex items-center justify-between pb-2 border-b transition-colors duration-500 ${theme === 'dark' ? 'border-gray-800' : 'border-gray-100'}`}>
@@ -458,6 +480,9 @@ export function HomePage() {
               <Link to="/settings" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
                 <Settings className="w-5 h-5" />
               </Link>
+              <Link to="/feedback" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
+                <MessageSquare className="w-5 h-5" />
+              </Link>
             </div>
           </div>
         </aside>
@@ -551,6 +576,17 @@ export function HomePage() {
             onBoundsChange={handleBoundsChange}
             userLocation={userLocation}
           />
+
+          {/* Floating Action Buttons (Desktop) */}
+          <div className="absolute bottom-8 right-8 z-1000 hidden lg:flex flex-col gap-3">
+            <Link
+              to="/feedback"
+              className={`flex items-center gap-3 px-6 py-4 rounded-3xl font-black text-sm shadow-[0_20px_50px_rgba(0,0,0,0.2)] transition-all hover:scale-105 active:scale-95 ${theme === 'dark' ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/40' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/30'}`}
+            >
+              <Plus className="w-5 h-5" />
+              Report Missing Station
+            </Link>
+          </div>
 
           {isLoading && (
             <div className={`absolute inset-0 z-50 flex flex-col items-center justify-center backdrop-blur-xs transition-all duration-1000 ${theme === 'dark' ? 'bg-black/40' : 'bg-white/20'}`}>

@@ -15,6 +15,13 @@
       "when": 1773796673880,
       "tag": "0001_graceful_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773801060083,
+      "tag": "0002_dizzy_may_parker",
+      "breakpoints": true
     }
   ]
 }

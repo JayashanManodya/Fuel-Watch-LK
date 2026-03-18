@@ -36,3 +36,21 @@ export const fuelUpdates = pgTable('fuel_updates', {
   waitingTime: integer('waiting_time'),
   timestamp: timestamp('timestamp').defaultNow(),
 });
+
+export const stationRequests = pgTable('station_requests', {
+  id: serial('id').primaryKey(),
+  type: varchar('type', { length: 50 }).notNull(), // 'add_station' or 'update_station'
+  stationId: integer('station_id').references(() => stations.id),
+  name: varchar('name', { length: 255 }),
+  nameSi: varchar('name_si', { length: 255 }),
+  nameTa: varchar('name_ta', { length: 255 }),
+  lat: doublePrecision('lat'),
+  lng: doublePrecision('lng'),
+  address: varchar('address', { length: 255 }),
+  addressSi: varchar('address_si', { length: 255 }),
+  addressTa: varchar('address_ta', { length: 255 }),
+  stationCode: varchar('station_code', { length: 50 }),
+  message: text('message'),
+  status: varchar('status', { length: 50 }).default('pending'), // 'pending', 'approved', 'rejected'
+  createdAt: timestamp('created_at').defaultNow(),
+});

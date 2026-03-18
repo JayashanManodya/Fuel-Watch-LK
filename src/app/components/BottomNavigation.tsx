@@ -1,4 +1,4 @@
-import { PlusCircle, Activity, Home, Settings } from 'lucide-react';
+import { PlusCircle, Activity, Home, Settings, MessageCircle } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ export function BottomNavigation() {
     { path: '/', icon: Home, label: t('nav.home') },
     { path: '/', icon: PlusCircle, label: t('nav.submit'), isSubmitToken: true },
     { path: '/feed', icon: Activity, label: t('nav.feed') },
+    { path: '/feedback', icon: MessageCircle, label: 'Feedback' },
     { path: '/settings', icon: Settings, label: t('nav.settings') },
   ];
 
@@ -32,7 +33,7 @@ export function BottomNavigation() {
                   }
                 }}
                 className={`
-                  flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all duration-200
+                  flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-200
                   ${isActive 
                     ? theme === 'dark' ? 'text-white' : 'text-blue-600'
                     : theme === 'dark' ? 'text-gray-600 hover:text-gray-300' : 'text-gray-600 hover:text-gray-900'
