@@ -271,6 +271,7 @@ export function AdminPage() {
   };
 
   const filteredStations = stations.filter(s => 
+    s.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.stationCode?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     s.address.toLowerCase().includes(searchQuery.toLowerCase())
@@ -364,7 +365,7 @@ export function AdminPage() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input 
                     className="pl-10" 
-                    placeholder="Search stations by name, code or address..." 
+                    placeholder="Search stations by ID, name, code or address..." 
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                   />
@@ -384,18 +385,23 @@ export function AdminPage() {
                     <div className="divide-y divide-gray-800/50">
                       {filteredStations.map(station => (
                         <div key={station.id} className="p-4 flex items-center justify-between hover:bg-gray-800/10 transition-colors">
-                          <div className="min-w-0 pr-4">
-                            <div className="flex items-center gap-2">
-                              <p className="font-semibold truncate">{station.name}</p>
-                              {station.stationCode && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-500 border border-blue-500/20">
-                                  {station.stationCode}
-                                </span>
-                              )}
+                          <div className="min-w-0 pr-4 flex-1">
+                            <div className="flex flex-col gap-1">
+                              <p className="font-semibold truncate flex items-center gap-2">
+                                <span className="text-[10px] text-gray-500 font-mono shrink-0">#{station.id}</span>
+                                <span className="truncate">{station.name}</span>
+                              </p>
+                              <div className="flex items-center gap-2">
+                                {station.stationCode && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-500 border border-blue-500/20 shrink-0">
+                                    {station.stationCode}
+                                  </span>
+                                )}
+                                <p className="text-xs text-muted-foreground truncate">{station.address}</p>
+                              </div>
                             </div>
-                            <p className="text-sm text-muted-foreground truncate">{station.address}</p>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-2 shrink-0 ml-4">
                             <Button 
                               variant="ghost" 
                               size="icon" 
@@ -404,7 +410,12 @@ export function AdminPage() {
                             >
                               <Edit2 className="w-4 h-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-500/10" onClick={() => deleteStation(station.id)}>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-red-500 hover:text-red-600 hover:bg-red-500/10" 
+                              onClick={() => deleteStation(station.id)}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -441,6 +452,9 @@ export function AdminPage() {
                                   </span>
                                 </div>
                                 <h3 className="font-bold text-lg">{req.name}</h3>
+                                {req.stationId && (
+                                  <p className="text-[10px] font-mono text-blue-500 mt-1">Station ID: {req.stationId}</p>
+                                )}
                                 <p className="text-sm text-muted-foreground">{req.address}</p>
                                 {req.message && (
                                   <div className="mt-3 p-3 rounded-lg bg-gray-800/20 text-sm italic">
