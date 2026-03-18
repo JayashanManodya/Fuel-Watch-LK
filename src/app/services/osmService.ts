@@ -5,50 +5,52 @@ interface OSMElement {
   lat?: number;
   lon?: number;
   center?: { lat: number; lon: number };
-  tags?: {
-    name?: string;
-    'name:en'?: string;
-    'name:si'?: string;
-    'name:ta'?: string;
-    brand?: string;
-    'brand:en'?: string;
-    'brand:si'?: string;
-    'brand:ta'?: string;
-    operator?: string;
-    'operator:en'?: string;
-    'operator:si'?: string;
-    'operator:ta'?: string;
-    'addr:street'?: string;
-    'addr:street:si'?: string;
-    'addr:street:ta'?: string;
-    'addr:city'?: string;
-    'addr:city:si'?: string;
-    'addr:city:ta'?: string;
-  };
+  tags?: any;
 }
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+const API_URL = '/api';
 
-const CACHE_KEY = 'fuel_stations_cache';
-const CACHE_TIME_KEY = 'fuel_stations_cache_time';
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+function mapDbToFuelStation(dbStation: any): FuelStation {
+  return {
+    id: dbStation.id.toString(), // The numeric ID from the database
+    stationCode: dbStation.stationCode,
+    name: dbStation.name,
+    nameSi: dbStation.nameSi,
+    nameTa: dbStation.nameTa,
+    status: dbStation.status || 'available',
+    lastUpdated: dbStation.lastUpdated ? new Date(dbStation.lastUpdated).toLocaleString() : 'Just now',
+    queueLength: dbStation.queueLength || 0,
+    waitingTime: dbStation.waitingTime || 0,
+    coordinates: [dbStation.lat, dbStation.lng] as [number, number],
+    address: dbStation.address,
+    addressSi: dbStation.addressSi,
+    addressTa: dbStation.addressTa,
+    fuelTypes: {
+      petrol92: dbStation.petrol92Status || 'not-available',
+      petrol95: dbStation.petrol95Status || 'not-available',
+      diesel: dbStation.dieselStatus || 'not-available',
+      kerosene: dbStation.keroseneStatus || 'not-available',
+    },
+  };
+}
 
-export async function fetchFuelStations(forceRefresh = false): Promise<FuelStation[]> {
-  const cachedData = localStorage.getItem(CACHE_KEY);
-  const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
-
-  // Return valid cache if available and not forcing refresh
-  if (!forceRefresh && cachedData && cachedTime) {
-    const isCacheValid = (Date.now() - parseInt(cachedTime)) < CACHE_TTL;
-    if (isCacheValid) {
-      try {
-        return JSON.parse(cachedData);
-      } catch (e) {
-        console.error('Failed to parse cached stations', e);
+export async function fetchFuelStations(): Promise<FuelStation[]> {
+  try {
+    // 1. Try to fetch from our local PostgreSQL API
+    const response = await fetch(`${API_URL}/stations`);
+    if (response.ok) {
+      const dbStations = await response.json();
+      if (dbStations && dbStations.length > 0) {
+        return dbStations.map(mapDbToFuelStation);
       }
     }
+  } catch (error) {
+    console.warn('API /api/stations not reachable or empty. Falling back to OSM seed.', error);
   }
 
+  // 2. If API is empty or failed, seed from OSM
+  console.log('Seeding from OSM...');
   const query = `
     [out:json][timeout:25];
     area["name:en"="Sri Lanka"]->.searchArea;
@@ -62,7 +64,7 @@ export async function fetchFuelStations(forceRefresh = false): Promise<FuelStati
 
   try {
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const id = setTimeout(() => controller.abort(), 30000);
 
     const response = await fetch(`${OVERPASS_URL}?data=${encodeURIComponent(query)}`, { signal: controller.signal });
     clearTimeout(id);
@@ -76,7 +78,6 @@ export async function fetchFuelStations(forceRefresh = false): Promise<FuelStati
       const lat = el.lat || el.center?.lat || 0;
       const lon = el.lon || el.center?.lon || 0;
       
-      
       const name = el.tags?.['name:en'] || el.tags?.name || el.tags?.brand || el.tags?.operator || 'Unknown Fuel Station';
       const nameSi = el.tags?.['name:si'] || el.tags?.['brand:si'] || el.tags?.['operator:si'];
       const nameTa = el.tags?.['name:ta'] || el.tags?.['brand:ta'] || el.tags?.['operator:ta'];
@@ -89,7 +90,7 @@ export async function fetchFuelStations(forceRefresh = false): Promise<FuelStati
       const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
 
       return {
-        id: el.id.toString(),
+        id: el.id.toString(), // osmId
         name,
         nameSi,
         nameTa,
@@ -110,24 +111,28 @@ export async function fetchFuelStations(forceRefresh = false): Promise<FuelStati
       };
     });
 
-    // Update cache
-    localStorage.setItem(CACHE_KEY, JSON.stringify(osmStations));
-    localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+    // 3. Seed the local DB in the background
+    try {
+      await fetch(`${API_URL}/stations/seed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stations: osmStations }),
+      });
+      console.log('Successfully seeded database from OSM');
+      
+      // Fetch the mapped versions from DB after seeding so they have numeric IDs
+      const refetchResponse = await fetch(`${API_URL}/stations`);
+      if (refetchResponse.ok) {
+        const dbStations = await refetchResponse.json();
+        return dbStations.map(mapDbToFuelStation);
+      }
+    } catch (seedError) {
+      console.error('Failed to seed DB, returning OSM data anyway', seedError);
+    }
 
     return osmStations;
   } catch (error) {
     console.error('Error fetching fuel stations:', error);
-    
-    // Fallback to expired cache if fetch fails (e.g., 429 Too Many Requests)
-    if (cachedData) {
-      console.log('Falling back to cached data due to fetch error');
-      try {
-        return JSON.parse(cachedData);
-      } catch (e) {
-        console.error('Failed to parse cached stations during fallback', e);
-      }
-    }
-    
     return [];
   }
 }

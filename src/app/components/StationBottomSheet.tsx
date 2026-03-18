@@ -86,7 +86,7 @@ export function StationBottomSheet({ station, isOpen, onClose, onConfirm }: Stat
                     <Fuel className={`w-6 h-6 ${statusConfig.textColor}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h2 className={`font-black text-xl mb-1 truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{localize(station, 'name')}</h2>
+                    <h2 className={`font-black text-xl mb-1 truncate ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{localize(station, 'name')} {station.stationCode ? `(${station.stationCode})` : ''}</h2>
                     <Badge 
                       className={`
                         ${statusConfig.color} hover:${statusConfig.color}

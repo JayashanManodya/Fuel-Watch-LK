@@ -34,6 +34,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'status.limited': 'Limited',
     'status.out-of-stock': 'Out of Stock',
     'status.not-available': 'Not Available',
+    'status.unknown': 'Unknown Status',
 
     // Fuel Types
     'fuel.petrol92': 'Petrol 92',
@@ -58,6 +59,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'station.updateStatus': 'Update Status',
     'station.recentUpdates': 'Recent Community Updates',
     'station.reportUpdate': 'Report Update',
+    'details.availability': 'Fuel Availability',
 
     // Settings
     'settings.title': 'Settings',
@@ -143,6 +145,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'status.limited': 'සීමිතයි',
     'status.out-of-stock': 'නැත',
     'status.not-available': 'ලබාගත නොහැක',
+    'status.unknown': 'නොදන්නා තත්ත්වය',
 
     // Fuel Types
     'fuel.petrol92': 'පෙට්‍රල් 92',
@@ -167,6 +170,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'station.updateStatus': 'තොරතුරු යාවත්කාලීන කරන්න',
     'station.recentUpdates': 'ප්‍රජාවගෙන් ලැබුණු අලුත්ම තොරතුරු',
     'station.reportUpdate': 'තොරතුරු ලබාදෙන්න',
+    'details.availability': 'ඉන්ධන පවතින බව',
 
     // Settings
     'settings.title': 'සැකසුම්',
@@ -251,6 +255,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'status.limited': 'குறைவாக உள்ளது',
     'status.out-of-stock': 'இல்லை',
     'status.not-available': 'கிடைக்கவில்லை',
+    'status.unknown': 'தெரியாத நிலை',
 
     // Fuel Types
     'fuel.petrol92': 'பெற்றோல் 92',
@@ -275,6 +280,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'station.updateStatus': 'நிலையை இற்றைப்படுத்துக',
     'station.recentUpdates': 'சமீபத்திய சமூக புதுப்பிப்புகள்',
     'station.reportUpdate': 'தகவலைப் பகிரவும்',
+    'details.availability': 'எரிபொருள் இருப்பு',
 
     // Settings
     'settings.title': 'அமைப்புகள்',

@@ -221,7 +221,7 @@ export function MapView({ stations, onStationClick, center, zoom = 13, onBoundsC
           <!-- Header -->
           <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
             <div style="flex: 1; padding-right: 12px;">
-              <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: ${theme === 'dark' ? '#ffffff' : '#111827'}; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${station.name}</h3>
+              <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: ${theme === 'dark' ? '#ffffff' : '#111827'}; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${station.name} ${station.stationCode ? `(${station.stationCode})` : ''}</h3>
               <p style="margin: 2px 0 0; font-size: 11px; color: ${theme === 'dark' ? '#9ca3af' : '#6b7280'}; font-weight: 400; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;">${station.address}</p>
             </div>
             <div style="

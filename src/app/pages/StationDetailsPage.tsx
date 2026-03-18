@@ -14,20 +14,10 @@ export function StationDetailsPage() {
   const { theme, t, localize } = useTheme();
   
   const [station, setStation] = useState<FuelStation | null>((location.state?.station as FuelStation) || null);
-  const stationUpdates: UserUpdate[] = [];
+  const [stationUpdates, setStationUpdates] = useState<UserUpdate[]>([]);
   const [isLoading, setIsLoading] = useState(!station);
+  
 
-  useEffect(() => {
-    if (!station && id) {
-      fetchFuelStations().then(stations => {
-        const found = stations.find(s => s.id === id);
-        if (found) setStation(found);
-        setIsLoading(false);
-      });
-    } else {
-      setIsLoading(false);
-    }
-  }, [id, station]);
 
   if (isLoading) {
     return (
@@ -137,7 +127,7 @@ export function StationDetailsPage() {
               <Fuel className={`w-8 h-8 ${statusConfig.textColor}`} />
             </div>
             <div className="flex-1">
-              <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-1`}>{localize(station, 'name')}</h1>
+              <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-1`}>{localize(station, 'name')} {station.stationCode ? `(${station.stationCode})` : ''}</h1>
               <div className={`flex items-center gap-2 text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-3`}>
                 <MapPin className="w-4 h-4" />
                 <span>{localize(station, 'address')}</span>
@@ -184,13 +174,15 @@ export function StationDetailsPage() {
               {t('station.getDirections')}
             </button>
             <Link
-              to="/submit"
+              to={`/submit?stationId=${station.id}`}
               className="flex-1 py-3 px-4 rounded-xl bg-white border-2 border-blue-500 hover:bg-blue-50 active:scale-[0.98] text-blue-600 font-medium transition-all duration-200 flex items-center justify-center gap-2"
             >
               {t('station.updateStatus')}
             </Link>
           </div>
         </div>
+
+
 
         {/* Fuel Availability */}
         <div className={`p-6 rounded-2xl backdrop-blur-xl ${theme === 'dark' ? 'bg-gray-900/80 border-gray-800' : 'bg-white/80 border-gray-200/50'} border shadow-sm`}>

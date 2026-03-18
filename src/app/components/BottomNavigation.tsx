@@ -1,6 +1,7 @@
 import { PlusCircle, Activity, Home, Settings } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { toast } from 'sonner';
 
 export function BottomNavigation() {
   const location = useLocation();
@@ -8,7 +9,7 @@ export function BottomNavigation() {
 
   const navItems = [
     { path: '/', icon: Home, label: t('nav.home') },
-    { path: '/submit', icon: PlusCircle, label: t('nav.submit') },
+    { path: '/', icon: PlusCircle, label: t('nav.submit'), isSubmitToken: true },
     { path: '/feed', icon: Activity, label: t('nav.feed') },
     { path: '/settings', icon: Settings, label: t('nav.settings') },
   ];
@@ -17,14 +18,19 @@ export function BottomNavigation() {
     <nav className={`fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl border-t shadow-lg lg:hidden transition-colors duration-500 ${theme === 'dark' ? 'bg-[#121212]/95 border-[#2a2a2a]' : 'bg-white/90 border-gray-200/50'}`}>
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-around py-3">
-          {navItems.map((item) => {
+          {navItems.map((item, index) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path && !item.isSubmitToken;
             
             return (
               <Link
-                key={item.path}
+                key={index}
                 to={item.path}
+                onClick={(e) => {
+                  if (item.isSubmitToken) {
+                    toast.info(t('station.selectToUpdate') || 'Select a station on the map to submit an update');
+                  }
+                }}
                 className={`
                   flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all duration-200
                   ${isActive 

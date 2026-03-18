@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Send, CheckCircle, Home, PlusCircle, Activity, Settings } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { fetchFuelStations } from '../services/osmService';
@@ -8,15 +8,18 @@ import { toast } from 'sonner';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
-import { MapView } from '../components/MapView';
 
 export function SubmitUpdatePage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { theme, t, localize } = useTheme();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stations, setStations] = useState<FuelStation[]>([]);
+  
+  const initialStationId = searchParams.get('stationId') || '';
+
   const [formData, setFormData] = useState<SubmitUpdateForm>({
-    stationId: '',
+    stationId: initialStationId,
     userName: '',
     status: 'available',
     queueLength: 0,
@@ -32,6 +35,8 @@ export function SubmitUpdatePage() {
     fetchFuelStations().then(setStations);
   }, []);
 
+  const selectedStation = stations.find(s => s.id === initialStationId);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -42,16 +47,28 @@ export function SubmitUpdatePage() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch(`/api/stations/${formData.stationId}/updates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
-    toast.success(t('submit.success'), {
-      description: t('submit.successDesc'),
-      icon: <CheckCircle className="w-5 h-5" />,
-    });
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
 
-    setIsSubmitting(false);
-    navigate('/feed');
+      toast.success(t('submit.success'), {
+        description: t('submit.successDesc'),
+        icon: <CheckCircle className="w-5 h-5" />,
+      });
+      navigate('/feed');
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast.error('Failed to update station details');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const StatusButton = ({ 
@@ -91,11 +108,11 @@ export function SubmitUpdatePage() {
   };
 
   return (
-    <div className={`flex flex-col lg:flex-row h-screen lg:h-screen overflow-hidden transition-colors duration-500 ${theme === 'dark' ? 'bg-[#121212] text-white' : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'}`}>
+    <div className={`min-h-screen py-0 lg:py-12 flex justify-center transition-colors duration-500 pb-20 lg:pb-12 ${theme === 'dark' ? 'bg-[#121212] text-white' : 'bg-gradient-to-br from-blue-50 via-white to-purple-50'}`}>
       
-      {/* Left Panel - Contains Form */}
-      <aside className={`flex flex-col w-full lg:w-[400px] xl:w-[450px] lg:h-full backdrop-blur-2xl border-r z-40 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#1a1a1a]/80 border-[#2a2a2a]' : 'bg-white/40 backdrop-blur-2xl border-gray-200/50'}`}>
-        <header className={`sticky top-0 z-50 backdrop-blur-xl border-b shadow-sm px-4 py-4 shrink-0 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#161616]/90 border-[#2a2a2a]' : 'bg-white/80 border-gray-200/50'}`}>
+      {/* Centered Form Container */}
+      <div className={`flex flex-col w-full max-w-2xl min-h-screen lg:min-h-0 lg:rounded-3xl backdrop-blur-2xl lg:border z-40 shadow-none lg:shadow-2xl transition-colors duration-500 ${theme === 'dark' ? 'bg-[#1a1a1a]/80 border-[#2a2a2a]' : 'bg-white/60 border-gray-200/50'}`}>
+        <header className={`sticky top-0 z-50 backdrop-blur-xl lg:rounded-t-3xl border-b shadow-sm px-4 py-4 shrink-0 transition-colors duration-500 ${theme === 'dark' ? 'bg-[#161616]/90 border-[#2a2a2a]' : 'bg-white/80 border-gray-200/50'}`}>
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
@@ -113,25 +130,24 @@ export function SubmitUpdatePage() {
         <div className="flex-1 overflow-y-auto w-full">
           <main className="px-4 py-6 w-full">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Select Station */}
+          {/* Selected Station (Fixed) */}
           <div className={`p-5 rounded-2xl backdrop-blur-xl border shadow-sm transition-colors duration-500 ${theme === 'dark' ? 'bg-gray-800/40 border-gray-700/50' : 'bg-white/80 border-gray-200/50'}`}>
-            <Label htmlFor="station" className={`text-sm font-semibold mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
+            <Label className={`text-sm font-semibold mb-2 block transition-colors ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
               {t('submit.station')}
             </Label>
-            <select
-              id="station"
-              required
-              value={formData.stationId}
-              onChange={(e) => setFormData({ ...formData, stationId: e.target.value })}
-              className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
-            >
-              <option value="">{t('submit.chooseStation')}</option>
-              {stations.map((station) => (
-                <option key={station.id} value={station.id}>
-                  {localize(station, 'name')} - {localize(station, 'address')}
-                </option>
-              ))}
-            </select>
+            
+            <div className={`w-full px-4 py-3 rounded-xl border opacity-70 cursor-not-allowed transition-colors ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-100 border-gray-300 text-gray-900'}`}>
+              {stations.length === 0 
+                ? 'Loading station...' 
+                : selectedStation 
+                  ? `${localize(selectedStation, 'name')} ${selectedStation.stationCode ? `(${selectedStation.stationCode})` : ''} - ${localize(selectedStation, 'address')}`
+                  : 'Invalid or missing station'
+              }
+            </div>
+            
+            {!selectedStation && stations.length > 0 && (
+               <p className="text-sm text-red-500 mt-3 font-medium">Please return to the map or feed and select a valid station to update.</p>
+            )}
           </div>
 
           {/* Your Name */}
@@ -260,7 +276,7 @@ export function SubmitUpdatePage() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !selectedStation}
             className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 active:scale-[0.98] text-white font-semibold shadow-lg shadow-blue-500/30 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
@@ -278,35 +294,7 @@ export function SubmitUpdatePage() {
         </form>
           </main>
         </div>
-        
-        {/* Desktop Side Panel Footer - Integrated Navigation */}
-        <div className={`p-4 border-t hidden lg:block shrink-0 mt-auto transition-colors duration-500 ${theme === 'dark' ? 'bg-[#121212] border-[#2a2a2a]' : 'bg-white/50 border-gray-100'}`}>
-          <div className="flex items-center justify-between px-2">
-            <Link to="/" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
-              <Home className="w-5 h-5" />
-            </Link>
-            <Link to="/submit" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-blue-50 text-blue-600'}`}>
-              <PlusCircle className="w-5 h-5" />
-            </Link>
-            <Link to="/feed" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
-              <Activity className="w-5 h-5" />
-            </Link>
-            <Link to="/settings" className={`p-3 rounded-2xl transition-all hover:scale-110 ${theme === 'dark' ? 'text-gray-500 hover:text-white hover:bg-white/10' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}>
-              <Settings className="w-5 h-5" />
-            </Link>
-          </div>
-        </div>
-      </aside>
-
-      {/* Right Panel - Map (Desktop only) */}
-      <main className="hidden lg:block flex-1 relative h-full bg-gray-50">
-        <MapView
-          stations={stations}
-          onStationClick={() => {}}
-          center={[7.8731, 80.7718]}
-          zoom={8}
-        />
-      </main>
+      </div>
     </div>
   );
 }

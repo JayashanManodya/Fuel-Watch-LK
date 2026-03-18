@@ -2,6 +2,7 @@ export type FuelStatus = 'available' | 'limited' | 'out-of-stock';
 
 export interface FuelStation {
   id: string;
+  stationCode?: string;
   name: string;
   nameSi?: string;
   nameTa?: string;
