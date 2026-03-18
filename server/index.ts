@@ -29,7 +29,7 @@ app.get('/api/stations', async (req, res) => {
 app.post('/api/stations/:id/updates', async (req, res) => {
   try {
     const stationId = parseInt(req.params.id);
-    const { userName, message, status, petrol92, petrol95, diesel, kerosene, queueLength, waitingTime } = req.body;
+    const { userName, message, status, petrol92, petrol95, autoDiesel, superDiesel, kerosene, petrolQueueLength, petrolWaitingTime, dieselQueueLength, dieselWaitingTime } = req.body;
 
     if (isNaN(stationId)) {
       return res.status(400).json({ error: 'Invalid station ID' });
@@ -43,10 +43,13 @@ app.post('/api/stations/:id/updates', async (req, res) => {
       status,
       petrol92,
       petrol95,
-      diesel,
+      autoDiesel,
+      superDiesel,
       kerosene,
-      queueLength,
-      waitingTime,
+      petrolQueueLength,
+      petrolWaitingTime,
+      dieselQueueLength,
+      dieselWaitingTime,
     });
 
     // Update the station's main status block
@@ -56,10 +59,13 @@ app.post('/api/stations/:id/updates', async (req, res) => {
     if (status) updateField.status = status;
     if (petrol92) updateField.petrol92Status = petrol92;
     if (petrol95) updateField.petrol95Status = petrol95;
-    if (diesel) updateField.dieselStatus = diesel;
+    if (autoDiesel) updateField.autoDieselStatus = autoDiesel;
+    if (superDiesel) updateField.superDieselStatus = superDiesel;
     if (kerosene) updateField.keroseneStatus = kerosene;
-    if (queueLength !== undefined) updateField.queueLength = queueLength;
-    if (waitingTime !== undefined) updateField.waitingTime = waitingTime;
+    if (petrolQueueLength !== undefined) updateField.petrolQueueLength = petrolQueueLength;
+    if (petrolWaitingTime !== undefined) updateField.petrolWaitingTime = petrolWaitingTime;
+    if (dieselQueueLength !== undefined) updateField.dieselQueueLength = dieselQueueLength;
+    if (dieselWaitingTime !== undefined) updateField.dieselWaitingTime = dieselWaitingTime;
 
     await db.update(stations)
       .set(updateField)
@@ -99,10 +105,13 @@ app.post('/api/stations/seed', async (req, res) => {
         status: s.status || 'out-of-stock',
         petrol92Status: s.fuelTypes?.petrol92 || 'not-available',
         petrol95Status: s.fuelTypes?.petrol95 || 'not-available',
-        dieselStatus: s.fuelTypes?.diesel || 'not-available',
+        autoDieselStatus: s.fuelTypes?.autoDiesel || 'not-available',
+        superDieselStatus: s.fuelTypes?.superDiesel || 'not-available',
         keroseneStatus: s.fuelTypes?.kerosene || 'not-available',
-        queueLength: s.queueLength || 0,
-        waitingTime: s.waitingTime || 0,
+        petrolQueueLength: s.petrolQueueLength || 0,
+        petrolWaitingTime: s.petrolWaitingTime || 0,
+        dieselQueueLength: s.dieselQueueLength || 0,
+        dieselWaitingTime: s.dieselWaitingTime || 0,
         lastUpdated: new Date(),
       }).onConflictDoNothing({ target: stations.osmId })
     });
@@ -126,10 +135,13 @@ app.post('/api/stations/reset', async (req, res) => {
       status: 'out-of-stock',
       petrol92Status: 'not-available',
       petrol95Status: 'not-available',
-      dieselStatus: 'not-available',
+      autoDieselStatus: 'not-available',
+      superDieselStatus: 'not-available',
       keroseneStatus: 'not-available',
-      queueLength: 0,
-      waitingTime: 0,
+      petrolQueueLength: 0,
+      petrolWaitingTime: 0,
+      dieselQueueLength: 0,
+      dieselWaitingTime: 0,
       lastUpdated: new Date(),
     });
 
@@ -183,10 +195,13 @@ app.post('/api/admin/stations', checkAdminAuth, async (req, res) => {
       status: 'out-of-stock',
       petrol92Status: 'not-available',
       petrol95Status: 'not-available',
-      dieselStatus: 'not-available',
+      autoDieselStatus: 'not-available',
+      superDieselStatus: 'not-available',
       keroseneStatus: 'not-available',
-      queueLength: 0,
-      waitingTime: 0,
+      petrolQueueLength: 0,
+      petrolWaitingTime: 0,
+      dieselQueueLength: 0,
+      dieselWaitingTime: 0,
       lastUpdated: new Date(),
     }).returning();
 
@@ -200,7 +215,7 @@ app.post('/api/admin/stations', checkAdminAuth, async (req, res) => {
 // Admin - Update station details
 app.patch('/api/admin/stations/:id', checkAdminAuth, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     const updates = req.body;
 
     if (isNaN(id)) {
@@ -224,7 +239,7 @@ app.patch('/api/admin/stations/:id', checkAdminAuth, async (req, res) => {
 // Admin - Delete station
 app.delete('/api/admin/stations/:id', checkAdminAuth, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     if (isNaN(id)) {
       return res.status(400).json({ error: 'Invalid ID' });
     }
@@ -251,7 +266,7 @@ app.get('/api/admin/requests', checkAdminAuth, async (req, res) => {
 // Admin - Update request status
 app.patch('/api/admin/requests/:id', checkAdminAuth, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id as string);
     const { status } = req.body;
     if (isNaN(id)) return res.status(400).json({ error: 'Invalid ID' });
 

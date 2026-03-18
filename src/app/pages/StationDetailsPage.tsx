@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, MapPin, Clock, Users, Navigation, Share2, Fuel, TrendingUp, AlertCircle, Send, CheckCircle, X, PlusCircle } from 'lucide-react';
-import { fetchFuelStations } from '../services/osmService';
+import { ArrowLeft, MapPin, Navigation, Share2, Fuel, TrendingUp, AlertCircle, Send, CheckCircle, X, PlusCircle } from 'lucide-react';
+// import { fetchFuelStations } from '../services/osmService';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import type { FuelStation, UserUpdate, FuelStatus, SubmitUpdateForm } from '../types';
@@ -16,21 +16,24 @@ export function StationDetailsPage() {
   const location = useLocation();
   const { theme, t, localize } = useTheme();
   
-  const [station, setStation] = useState<FuelStation | null>((location.state?.station as FuelStation) || null);
-  const [stationUpdates, setStationUpdates] = useState<UserUpdate[]>([]);
-  const [isLoading, setIsLoading] = useState(!station);
+  const [station] = useState<FuelStation | null>((location.state?.station as FuelStation) || null);
+  const [stationUpdates] = useState<UserUpdate[]>([]);
+  const [isLoading] = useState(!station);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState<SubmitUpdateForm>({
     stationId: id || '',
     userName: '',
+    petrolQueueLength: station?.petrolQueueLength || 0,
+    petrolWaitingTime: station?.petrolWaitingTime || 0,
+    dieselQueueLength: station?.dieselQueueLength || 0,
+    dieselWaitingTime: station?.dieselWaitingTime || 0,
     status: (station?.status as FuelStatus) || 'available',
-    queueLength: station?.queueLength || 0,
-    waitingTime: station?.waitingTime || 0,
     petrol92: (station?.fuelTypes?.petrol92 as FuelStatus | 'not-available') || 'not-available',
     petrol95: (station?.fuelTypes?.petrol95 as FuelStatus | 'not-available') || 'not-available',
-    diesel: (station?.fuelTypes?.diesel as FuelStatus | 'not-available') || 'not-available',
+    autoDiesel: (station?.fuelTypes?.autoDiesel as FuelStatus | 'not-available') || 'not-available',
+    superDiesel: (station?.fuelTypes?.superDiesel as FuelStatus | 'not-available') || 'not-available',
     kerosene: (station?.fuelTypes?.kerosene as FuelStatus | 'not-available') || 'not-available',
     message: '',
   });
@@ -38,7 +41,7 @@ export function StationDetailsPage() {
 
   // Automatically calculate overall status based on individual fuel types
   useEffect(() => {
-    const fuelStatuses = [formData.petrol92, formData.petrol95, formData.diesel, formData.kerosene];
+    const fuelStatuses = [formData.petrol92, formData.petrol95, formData.autoDiesel, formData.superDiesel, formData.kerosene];
     
     let newStatus: FuelStatus = 'out-of-stock';
     if (fuelStatuses.some(s => s === 'available')) {
@@ -240,22 +243,45 @@ export function StationDetailsPage() {
           </div>
 
           {/* Real-time Stats */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'} border`}>
-              <div className="flex items-center gap-2 mb-1">
-                <Users className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
-                <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>{t('station.queue')}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            {/* Petrol Queue */}
+            <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-blue-900/10 border-blue-900/20' : 'bg-blue-50 border-blue-100'} border`}>
+              <div className="flex items-center gap-2 mb-2">
+                <Fuel className={`w-4 h-4 ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`} />
+                <span className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}>
+                  {t('fuel.petrol')} {t('station.queue')}
+                </span>
               </div>
-              <p className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{station.queueLength ?? '--'}</p>
-              <p className="text-xs text-gray-500">{t('station.vehicles')}</p>
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className={`text-2xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{station.petrolQueueLength ?? '--'}</p>
+                  <p className="text-[10px] font-bold uppercase text-gray-500 tracking-tight">{t('station.vehicles')}</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-xl font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{station.petrolWaitingTime ?? '--'}</p>
+                  <p className="text-[10px] font-bold uppercase text-gray-500 tracking-tight">{t('station.mins')} {t('station.waiting')}</p>
+                </div>
+              </div>
             </div>
-            <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'} border`}>
-              <div className="flex items-center gap-2 mb-1">
-                <Clock className={`w-4 h-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
-                <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>{t('station.waiting')}</span>
+
+            {/* Diesel Queue */}
+            <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-orange-900/10 border-orange-900/20' : 'bg-orange-50 border-orange-100'} border`}>
+              <div className="flex items-center gap-2 mb-2">
+                <Fuel className={`w-4 h-4 ${theme === 'dark' ? 'text-orange-400' : 'text-orange-600'}`} />
+                <span className={`text-xs font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-orange-400' : 'text-orange-600'}`}>
+                  {t('fuel.diesel')} {t('station.queue')}
+                </span>
               </div>
-              <p className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{station.waitingTime ?? '--'}</p>
-              <p className="text-xs text-gray-500">{t('station.mins')}</p>
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className={`text-2xl font-black ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{station.dieselQueueLength ?? '--'}</p>
+                  <p className="text-[10px] font-bold uppercase text-gray-500 tracking-tight">{t('station.vehicles')}</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-xl font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{station.dieselWaitingTime ?? '--'}</p>
+                  <p className="text-[10px] font-bold uppercase text-gray-500 tracking-tight">{t('station.mins')} {t('station.waiting')}</p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -324,27 +350,61 @@ export function StationDetailsPage() {
                  </div>
                </div>
 
-               {/* Queue & Message */}
-               <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-2">
-                   <Label className="text-xs font-bold">Queue (Vehicles)</Label>
-                   <Input 
-                     type="number" 
-                     value={formData.queueLength} 
-                     onChange={e => setFormData({ ...formData, queueLength: parseInt(e.target.value) || 0 })}
-                     className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}
-                   />
-                 </div>
-                 <div className="space-y-2">
-                   <Label className="text-xs font-bold">Wait (Minutes)</Label>
-                   <Input 
-                     type="number" 
-                     value={formData.waitingTime} 
-                     onChange={e => setFormData({ ...formData, waitingTime: parseInt(e.target.value) || 0 })}
-                     className={theme === 'dark' ? 'bg-gray-800 border-gray-700' : ''}
-                   />
-                 </div>
-               </div>
+                {/* Petrol Queue */}
+                <div className="p-4 rounded-2xl bg-blue-50/30 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Fuel className="w-4 h-4 text-blue-500" />
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">Petrol Queue Details</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider opacity-60">Queue (Vehicles)</Label>
+                      <Input 
+                        type="number" 
+                        value={formData.petrolQueueLength} 
+                        onChange={e => setFormData({ ...formData, petrolQueueLength: parseInt(e.target.value) || 0 })}
+                        className={theme === 'dark' ? 'bg-gray-800 border-gray-700 h-9' : 'h-9'}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider opacity-60">Wait (Minutes)</Label>
+                      <Input 
+                        type="number" 
+                        value={formData.petrolWaitingTime} 
+                        onChange={e => setFormData({ ...formData, petrolWaitingTime: parseInt(e.target.value) || 0 })}
+                        className={theme === 'dark' ? 'bg-gray-800 border-gray-700 h-9' : 'h-9'}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Diesel Queue */}
+                <div className="p-4 rounded-2xl bg-orange-50/30 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-900/20 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Fuel className="w-4 h-4 text-orange-500" />
+                    <span className="text-sm font-bold text-orange-600 dark:text-orange-400">Diesel Queue Details</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider opacity-60">Queue (Vehicles)</Label>
+                      <Input 
+                        type="number" 
+                        value={formData.dieselQueueLength} 
+                        onChange={e => setFormData({ ...formData, dieselQueueLength: parseInt(e.target.value) || 0 })}
+                        className={theme === 'dark' ? 'bg-gray-800 border-gray-700 h-9' : 'h-9'}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider opacity-60">Wait (Minutes)</Label>
+                      <Input 
+                        type="number" 
+                        value={formData.dieselWaitingTime} 
+                        onChange={e => setFormData({ ...formData, dieselWaitingTime: parseInt(e.target.value) || 0 })}
+                        className={theme === 'dark' ? 'bg-gray-800 border-gray-700 h-9' : 'h-9'}
+                      />
+                    </div>
+                  </div>
+                </div>
 
                <div className="space-y-2">
                  <Label className="text-xs font-bold">Additional Message (Optional)</Label>
@@ -401,11 +461,19 @@ export function StationDetailsPage() {
                 </p>
               </div>
             )}
-            {station.fuelTypes?.diesel && (
-              <div className={`p-4 rounded-xl border ${getStatusConfig(station.fuelTypes.diesel).bgColor} ${getStatusConfig(station.fuelTypes.diesel).borderColor}`}>
+             {station.fuelTypes?.autoDiesel && (
+              <div className={`p-4 rounded-xl border ${getStatusConfig(station.fuelTypes.autoDiesel).bgColor} ${getStatusConfig(station.fuelTypes.autoDiesel).borderColor}`}>
                 <p className="text-sm font-medium text-gray-700 mb-1">{t('fuel.diesel')}</p>
-                <p className={`text-lg font-bold ${getStatusConfig(station.fuelTypes.diesel).textColor}`}>
-                  {getStatusConfig(station.fuelTypes.diesel).label}
+                <p className={`text-lg font-bold ${getStatusConfig(station.fuelTypes.autoDiesel).textColor}`}>
+                  {getStatusConfig(station.fuelTypes.autoDiesel).label}
+                </p>
+              </div>
+            )}
+            {station.fuelTypes?.superDiesel && (
+              <div className={`p-4 rounded-xl border ${getStatusConfig(station.fuelTypes.superDiesel).bgColor} ${getStatusConfig(station.fuelTypes.superDiesel).borderColor}`}>
+                <p className="text-sm font-medium text-gray-700 mb-1">{t('fuel.superDiesel')}</p>
+                <p className={`text-lg font-bold ${getStatusConfig(station.fuelTypes.superDiesel).textColor}`}>
+                  {getStatusConfig(station.fuelTypes.superDiesel).label}
                 </p>
               </div>
             )}

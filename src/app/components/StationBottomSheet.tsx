@@ -1,4 +1,4 @@
-import { Fuel, Clock, Users, CheckCircle2, X, Navigation } from 'lucide-react';
+import { Fuel, CheckCircle2, X, Navigation } from 'lucide-react';
 import type { FuelStation } from '../types';
 import { Badge } from './ui/badge';
 import { useTheme } from '../context/ThemeContext';
@@ -110,11 +110,12 @@ export function StationBottomSheet({ station, isOpen, onClose, onConfirm }: Stat
                 <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mb-3 px-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
                   {t('submit.status')}
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                   {[
                     { id: 'petrol92', key: 'fuel.petrol92' },
                     { id: 'petrol95', key: 'fuel.petrol95' },
-                    { id: 'diesel', key: 'fuel.diesel' },
+                    { id: 'autoDiesel', key: 'fuel.diesel' },
+                    { id: 'superDiesel', key: 'fuel.superDiesel' },
                     { id: 'kerosene', key: 'fuel.kerosene' }
                   ].map((fuel) => {
                     const status = station.fuelTypes?.[fuel.id as keyof typeof station.fuelTypes];
@@ -135,34 +136,49 @@ export function StationBottomSheet({ station, isOpen, onClose, onConfirm }: Stat
               </div>
 
               {/* Real-time Info */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className={`p-5 rounded-4xl border transition-colors duration-500
-                  ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                {/* Petrol Queue */}
+                <div className={`p-4 rounded-3xl border transition-colors duration-500
+                  ${theme === 'dark' ? 'bg-blue-500/5 border-blue-500/10' : 'bg-blue-50 border-blue-100'}
                 `}>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-white/5 text-gray-400' : 'bg-white text-gray-400'} shadow-sm`}>
-                      <Clock className="w-4 h-4" />
+                    <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-blue-500/10 text-blue-400' : 'bg-white text-blue-500'} shadow-sm`}>
+                      <Fuel className="w-3.5 h-3.5" />
                     </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                      {t('station.lastUpdated')}
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-blue-400' : 'text-blue-600'}`}>
+                      Petrol {t('station.queue')}
                     </span>
                   </div>
-                  <p className={`text-sm font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-900'}`}>{station.lastUpdated}</p>
+                  <div className="flex items-end justify-between">
+                    <p className={`text-sm font-black ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
+                      {station.petrolQueueLength ?? 0} <span className="text-[10px] font-bold opacity-50">{t('station.vehicles')}</span>
+                    </p>
+                    <p className={`text-xs font-bold ${theme === 'dark' ? 'text-blue-300' : 'text-blue-700'}`}>
+                      {station.petrolWaitingTime ?? 0} <span className="text-[10px] opacity-60">mins</span>
+                    </p>
+                  </div>
                 </div>
-                <div className={`p-5 rounded-4xl border transition-colors duration-500
-                  ${theme === 'dark' ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}
+
+                {/* Diesel Queue */}
+                <div className={`p-4 rounded-3xl border transition-colors duration-500
+                  ${theme === 'dark' ? 'bg-orange-500/5 border-orange-500/10' : 'bg-orange-50 border-orange-100'}
                 `}>
                   <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-white/5 text-gray-400' : 'bg-white text-gray-400'} shadow-sm`}>
-                      <Users className="w-4 h-4" />
+                    <div className={`p-2 rounded-xl ${theme === 'dark' ? 'bg-orange-500/10 text-orange-400' : 'bg-white text-orange-500'} shadow-sm`}>
+                      <Fuel className="w-3.5 h-3.5" />
                     </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                      {t('station.queue')}
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-orange-400' : 'text-orange-600'}`}>
+                      Diesel {t('station.queue')}
                     </span>
                   </div>
-                  <p className={`text-sm font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-900'}`}>
-                    {station.queueLength} {t('station.vehicles')}
-                  </p>
+                  <div className="flex items-end justify-between">
+                    <p className={`text-sm font-black ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
+                      {station.dieselQueueLength ?? 0} <span className="text-[10px] font-bold opacity-50">{t('station.vehicles')}</span>
+                    </p>
+                    <p className={`text-xs font-bold ${theme === 'dark' ? 'text-orange-300' : 'text-orange-700'}`}>
+                      {station.dieselWaitingTime ?? 0} <span className="text-[10px] opacity-60">mins</span>
+                    </p>
+                  </div>
                 </div>
               </div>
 

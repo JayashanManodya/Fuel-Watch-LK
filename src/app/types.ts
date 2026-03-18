@@ -8,8 +8,10 @@ export interface FuelStation {
   nameTa?: string;
   status: FuelStatus;
   lastUpdated: string;
-  queueLength: number;
-  waitingTime: number; // in minutes
+  petrolQueueLength: number;
+  petrolWaitingTime: number; // in minutes
+  dieselQueueLength: number;
+  dieselWaitingTime: number; // in minutes
   coordinates: [number, number]; // [latitude, longitude]
   address: string;
   addressSi?: string;
@@ -17,7 +19,8 @@ export interface FuelStation {
   fuelTypes: {
     petrol92?: FuelStatus;
     petrol95?: FuelStatus;
-    diesel?: FuelStatus;
+    autoDiesel?: FuelStatus;
+    superDiesel?: FuelStatus;
     kerosene?: FuelStatus;
   };
   distance?: number; // distance from user in km
@@ -30,12 +33,15 @@ export interface UserUpdate {
   userName: string;
   timestamp: Date;
   status: FuelStatus;
-  queueLength: number;
-  waitingTime: number;
+  petrolQueueLength: number;
+  petrolWaitingTime: number;
+  dieselQueueLength: number;
+  dieselWaitingTime: number;
   fuelTypes: {
     petrol92?: FuelStatus;
     petrol95?: FuelStatus;
-    diesel?: FuelStatus;
+    autoDiesel?: FuelStatus;
+    superDiesel?: FuelStatus;
     kerosene?: FuelStatus;
   };
   message?: string;
@@ -45,11 +51,14 @@ export interface SubmitUpdateForm {
   stationId: string;
   userName: string;
   status: FuelStatus;
-  queueLength: number;
-  waitingTime: number;
+  petrolQueueLength: number;
+  petrolWaitingTime: number;
+  dieselQueueLength: number;
+  dieselWaitingTime: number;
   petrol92: FuelStatus | 'not-available';
   petrol95: FuelStatus | 'not-available';
-  diesel: FuelStatus | 'not-available';
+  autoDiesel: FuelStatus | 'not-available';
+  superDiesel: FuelStatus | 'not-available';
   kerosene: FuelStatus | 'not-available';
   message?: string;
 }

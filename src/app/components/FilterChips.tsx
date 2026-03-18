@@ -2,7 +2,7 @@ import { Fuel } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 
-type FuelType = 'all' | 'petrol92' | 'petrol95' | 'diesel' | 'kerosene';
+type FuelType = 'all' | 'petrol92' | 'petrol95' | 'autoDiesel' | 'superDiesel' | 'kerosene';
 
 interface FilterChipsProps {
   onFilterChange: (filter: FuelType) => void;
@@ -16,7 +16,8 @@ export function FilterChips({ onFilterChange }: FilterChipsProps) {
     { id: 'all', label: t('filter.all'), icon: Fuel },
     { id: 'petrol92', label: t('fuel.petrol92'), icon: Fuel },
     { id: 'petrol95', label: t('fuel.petrol95'), icon: Fuel },
-    { id: 'diesel', label: t('fuel.diesel'), icon: Fuel },
+    { id: 'autoDiesel', label: t('fuel.diesel'), icon: Fuel },
+    { id: 'superDiesel', label: t('fuel.superDiesel'), icon: Fuel },
     { id: 'kerosene', label: t('fuel.kerosene'), icon: Fuel },
   ];
 
