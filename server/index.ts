@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { db } from './db.js';
 import { stations, fuelUpdates, stationRequests } from './schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -61,6 +61,21 @@ app.post('/api/stations/:id/updates', async (req, res) => {
       dieselQueueLength,
       dieselWaitingTime,
     });
+
+    // Keep only the latest 10 updates per station — delete oldest if exceeded
+    const MAX_UPDATES_PER_STATION = 10;
+    const existingUpdates = await db
+      .select({ id: fuelUpdates.id })
+      .from(fuelUpdates)
+      .where(eq(fuelUpdates.stationId, stationId))
+      .orderBy(asc(fuelUpdates.timestamp));
+
+    if (existingUpdates.length > MAX_UPDATES_PER_STATION) {
+      const toDelete = existingUpdates.slice(0, existingUpdates.length - MAX_UPDATES_PER_STATION);
+      for (const record of toDelete) {
+        await db.delete(fuelUpdates).where(eq(fuelUpdates.id, record.id));
+      }
+    }
 
     // Update the station's main status block
     const updateField: any = {

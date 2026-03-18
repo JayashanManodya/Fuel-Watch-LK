@@ -8,7 +8,7 @@ export function BottomNavigation() {
 
   const navItems = [
     { path: '/', icon: Home, label: t('nav.home') },
-    { path: '/feedback', icon: MessageCircle, label: 'Feedback' },
+    { path: '/feedback', icon: MessageCircle, label: 'Report' },
     { path: '/guide', icon: BookOpen, label: 'Guide' },
     { path: '/settings', icon: Settings, label: t('nav.settings') },
   ];
