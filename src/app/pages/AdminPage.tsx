@@ -139,17 +139,12 @@ export function AdminPage() {
   };
 
   const handleSeedFromOSM = async () => {
-    if (!resetPassword) {
-      toast.error('Password is required');
-      return;
-    }
-
     const auth = sessionStorage.getItem('adminAuth');
     if (!auth) return;
     
     setIsResetting(true);
     try {
-      const result = await adminSeedFromOSM(auth, resetPassword);
+      const result = await adminSeedFromOSM(auth);
       toast.success(`Seeded ${result.count} stations from OSM`);
       setIsResetModalOpen(false);
       setResetPassword('');
@@ -165,17 +160,12 @@ export function AdminPage() {
   };
 
   const handleResetStations = async () => {
-    if (!resetPassword) {
-      toast.error('Password is required');
-      return;
-    }
-
     const auth = sessionStorage.getItem('adminAuth');
     if (!auth) return;
 
     setIsResetting(true);
     try {
-      await adminResetStations(auth, resetPassword);
+      await adminResetStations(auth);
       toast.success('All station data reset to defaults');
       setIsResetModalOpen(false);
       setResetPassword('');
