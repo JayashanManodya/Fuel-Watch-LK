@@ -129,7 +129,11 @@ app.post('/api/stations/:id/updates', async (req, res) => {
 // Admin - Seed stations from OSM data (admin only)
 app.post('/api/stations/seed', checkAdminAuth, async (req, res) => {
   try {
-    const { stations: newStations } = req.body;
+    const { password, stations: newStations } = req.body;
+    if (password !== process.env.ADMIN_PASSWORD) {
+      return res.status(401).json({ error: 'Invalid password for seeding' });
+    }
+    
     if (!newStations || !Array.isArray(newStations)) {
       return res.status(400).json({ error: 'Invalid payload' });
     }
