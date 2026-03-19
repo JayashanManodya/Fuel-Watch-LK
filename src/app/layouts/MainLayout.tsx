@@ -4,7 +4,7 @@ import { ContributePopup } from '../components/ContributePopup';
 
 export function MainLayout() {
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col">
       <Outlet />
       <BottomNavigation />
       <ContributePopup />
