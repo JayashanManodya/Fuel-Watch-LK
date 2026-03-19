@@ -16,7 +16,8 @@ import {
   Ban,
   MessageSquare,
   RefreshCw,
-  RotateCcw
+  RotateCcw,
+  ShieldAlert
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { fetchFuelStations, adminSeedFromOSM, adminResetStations } from '../services/osmService';
@@ -41,6 +42,9 @@ export function AdminPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isRequestsLoading, setIsRequestsLoading] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [resetPassword, setResetPassword] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
 
   // Form state for add/edit
   const [formData, setFormData] = useState({
@@ -148,15 +152,25 @@ export function AdminPage() {
   };
 
   const handleResetStations = async () => {
-    if (!confirm('This will reset ALL station statuses to defaults. Continue?')) return;
+    if (!resetPassword) {
+      toast.error('Password is required');
+      return;
+    }
+
     const auth = sessionStorage.getItem('adminAuth');
     if (!auth) return;
+
+    setIsResetting(true);
     try {
-      await adminResetStations(auth);
+      await adminResetStations(auth, resetPassword);
       toast.success('All station data reset to defaults');
+      setIsResetModalOpen(false);
+      setResetPassword('');
       fetchStations();
     } catch (error: any) {
       toast.error(error.message || 'Reset failed');
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -356,7 +370,7 @@ export function AdminPage() {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <Button variant="outline" onClick={handleLogout}>Logout</Button>
-            <Button variant="outline" onClick={handleResetStations} className="text-orange-500 border-orange-500/30 hover:bg-orange-500/10">
+            <Button variant="outline" onClick={() => setIsResetModalOpen(true)} className="text-orange-500 border-orange-500/30 hover:bg-orange-500/10">
               <RotateCcw className="w-4 h-4 mr-2" /> Reset Data
             </Button>
             <Button variant="outline" onClick={handleSeedFromOSM} className="text-green-500 border-green-500/30 hover:bg-green-500/10">
@@ -608,6 +622,65 @@ export function AdminPage() {
              <Plus className="w-8 h-8" />
            </Button>
          </div>
+      )}
+
+      {/* Reset Confirmation Modal */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <Card className="w-full max-w-md border-orange-500/20 shadow-2xl animate-in zoom-in-95 duration-200">
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center mx-auto mb-4">
+                <ShieldAlert className="w-10 h-10 text-orange-500" />
+              </div>
+              <CardTitle className="text-2xl font-bold">Reset All Data?</CardTitle>
+              <p className="text-muted-foreground mt-2">
+                This action is irreversible. All fuel statuses, wait times, and queue lengths will be reset to default values across all stations.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="reset-password">Confirm Admin Password</Label>
+                <Input 
+                  id="reset-password" 
+                  type="password" 
+                  value={resetPassword} 
+                  onChange={e => setResetPassword(e.target.value)} 
+                  placeholder="Enter admin password to proceed"
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1" 
+                  onClick={() => {
+                    setIsResetModalOpen(false);
+                    setResetPassword('');
+                  }}
+                  disabled={isResetting}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  className="flex-1 bg-orange-600 hover:bg-orange-700" 
+                  onClick={handleResetStations}
+                  disabled={isResetting}
+                >
+                  {isResetting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Resetting...
+                    </>
+                  ) : (
+                    'Confirm Reset'
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
