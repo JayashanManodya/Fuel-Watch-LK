@@ -593,23 +593,33 @@ export function StationDetailsPage() {
         </div>
 
         {/* Recent Updates */}
-        <div className="p-6 rounded-2xl backdrop-blur-xl bg-white/80 border border-gray-200/50">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('station.recentUpdates')}</h2>
+        <div
+          className={`p-6 rounded-2xl backdrop-blur-xl ${
+            theme === 'dark' ? 'bg-card/80 border-border' : 'bg-white/80 border-gray-200/50'
+          } border shadow-sm`}
+        >
+          <h2 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4`}>
+            {t('station.recentUpdates')}
+          </h2>
           {stationUpdates.length === 0 ? (
-            <p className="text-sm text-gray-600">No community reports yet.</p>
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+              No community reports yet.
+            </p>
           ) : (
             <div className="space-y-3">
               {stationUpdates.map((update: UserUpdate) => (
                 <div
                   key={update.id}
-                  className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex flex-col gap-2"
+                  className={`p-4 rounded-2xl ${
+                    theme === 'dark' ? 'bg-card/40 border-border' : 'bg-gray-50 border-gray-100'
+                  } border flex flex-col gap-2`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">
+                      <p className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} truncate`}>
                         {update.userName}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                         {(() => {
                           const ts = update.timestamp;
                           if (!(ts instanceof Date)) return '';
@@ -631,7 +641,7 @@ export function StationDetailsPage() {
                   })()}
 
                   {update.message ? (
-                    <p className="text-sm text-gray-700 italic leading-snug">
+                    <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} italic leading-snug`}>
                       "{update.message}"
                     </p>
                   ) : null}
