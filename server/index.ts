@@ -84,6 +84,28 @@ app.get('/api/stations/:id/latest-update', async (req, res) => {
   }
 });
 
+// GET last 5 updates for a station
+app.get('/api/stations/:id/recent-updates', async (req, res) => {
+  try {
+    const stationId = parseInt(req.params.id);
+    if (isNaN(stationId)) {
+      return res.status(400).json({ error: 'Invalid station ID' });
+    }
+
+    const updates = await db
+      .select()
+      .from(fuelUpdates)
+      .where(eq(fuelUpdates.stationId, stationId))
+      .orderBy(desc(fuelUpdates.timestamp))
+      .limit(5);
+
+    res.json(updates);
+  } catch (error) {
+    console.error('Error fetching recent updates:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // POST to update station fuel status
 app.post('/api/stations/:id/updates', async (req, res) => {
   try {

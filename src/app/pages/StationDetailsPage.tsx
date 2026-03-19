@@ -12,7 +12,7 @@ import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 
-interface LatestUpdate {
+interface RecentUpdate {
   id: number;
   stationId: number;
   userName: string | null;
@@ -37,7 +37,7 @@ export function StationDetailsPage() {
   const [isLoading] = useState(!station);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [latestUpdate, setLatestUpdate] = useState<LatestUpdate | null>(null);
+  const [recentUpdates, setRecentUpdates] = useState<RecentUpdate[]>([]);
 
   const [formData, setFormData] = useState<SubmitUpdateForm>({
     stationId: id || '',
@@ -56,12 +56,12 @@ export function StationDetailsPage() {
   });
   
 
-  // Fetch latest update (last reporter info)
+  // Fetch last 5 updates
   useEffect(() => {
     if (!id) return;
-    fetch(`${API_BASE}/stations/${id}/latest-update`)
-      .then(res => res.ok ? res.json() : null)
-      .then(data => setLatestUpdate(data))
+    fetch(`${API_BASE}/stations/${id}/recent-updates`)
+      .then(res => res.ok ? res.json() : [])
+      .then(data => setRecentUpdates(Array.isArray(data) ? data : []))
       .catch(() => {});
   }, [id]);
 
@@ -522,70 +522,88 @@ export function StationDetailsPage() {
           </div>
         </div>
 
-        {/* Last Reported By */}
-        {latestUpdate && (
+        {/* Recent Reports */}
+        {recentUpdates.length > 0 && (
           <div className={`p-6 rounded-2xl backdrop-blur-xl ${theme === 'dark' ? 'bg-card/80 border-border' : 'bg-white/80 border-gray-200/50'} border shadow-sm`}>
             <h2 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-4 flex items-center gap-2`}>
               <User className="w-5 h-5 text-blue-500" />
-              Last Reported By
+              Recent Reports
+              <span className={`ml-auto text-xs font-normal px-2 py-0.5 rounded-full ${theme === 'dark' ? 'bg-card text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
+                Last {recentUpdates.length}
+              </span>
             </h2>
 
-            <div className={`p-4 rounded-xl ${theme === 'dark' ? 'bg-card/40 border-border' : 'bg-gray-50 border-gray-100'} border space-y-3`}>
-              {/* Reporter name & time */}
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm ${theme === 'dark' ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>
-                    {latestUpdate.userName ? latestUpdate.userName.charAt(0).toUpperCase() : '?'}
-                  </div>
-                  <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                    {latestUpdate.userName || 'Anonymous'}
-                  </span>
-                </div>
-                {latestUpdate.timestamp && (
-                  <div className={`flex items-center gap-1.5 text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <Clock className="w-3.5 h-3.5" />
-                    <span title={format(new Date(latestUpdate.timestamp), 'PPpp')}>
-                      {formatDistanceToNow(new Date(latestUpdate.timestamp), { addSuffix: true })}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Fuel types reported */}
-              {(() => {
-                const fuelLabels: { key: keyof typeof latestUpdate; label: string }[] = [
+            <div className="space-y-3">
+              {recentUpdates.map((update, index) => {
+                const fuelLabels: { key: keyof RecentUpdate; label: string }[] = [
                   { key: 'petrol92', label: 'Petrol 92' },
                   { key: 'petrol95', label: 'Petrol 95' },
                   { key: 'autoDiesel', label: 'Auto Diesel' },
                   { key: 'superDiesel', label: 'Super Diesel' },
                   { key: 'kerosene', label: 'Kerosene' },
                 ];
-                const reported = fuelLabels.filter(f => latestUpdate[f.key] && latestUpdate[f.key] !== 'not-available');
-                if (reported.length === 0) return null;
+                const reported = fuelLabels.filter(f => update[f.key] && update[f.key] !== 'not-available');
+
                 return (
-                  <div className="flex flex-wrap gap-2">
-                    {reported.map(({ key, label }) => {
-                      const cfg = getStatusConfig(latestUpdate[key] as string);
-                      return (
-                        <span key={key} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold border ${cfg.bgColor} ${cfg.borderColor} ${cfg.textColor}`}>
-                          <Fuel className="w-3 h-3" />
-                          {label}: {cfg.label}
-                        </span>
-                      );
-                    })}
+                  <div key={update.id} className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-card/40 border-border' : 'bg-gray-50 border-gray-100'} space-y-2.5`}>
+                    {/* Name, badge & time */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0
+                          ${index === 0
+                            ? theme === 'dark' ? 'bg-blue-500/20 text-blue-400' : 'bg-blue-100 text-blue-700'
+                            : theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-200 text-gray-600'
+                          }`}>
+                          {update.userName ? update.userName.charAt(0).toUpperCase() : '?'}
+                        </div>
+                        <div>
+                          <span className={`font-semibold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                            {update.userName || 'Anonymous'}
+                          </span>
+                          {index === 0 && (
+                            <span className="ml-2 text-[10px] font-bold uppercase tracking-wide bg-blue-500 text-white px-1.5 py-0.5 rounded-full">
+                              Latest
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {update.timestamp && (
+                        <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                          <Clock className="w-3 h-3" />
+                          <span title={format(new Date(update.timestamp), 'PPpp')}>
+                            {formatDistanceToNow(new Date(update.timestamp), { addSuffix: true })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Fuel status badges */}
+                    {reported.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {reported.map(({ key, label }) => {
+                          const cfg = getStatusConfig(update[key] as string);
+                          return (
+                            <span key={key} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold border ${cfg.bgColor} ${cfg.borderColor} ${cfg.textColor}`}>
+                              <Fuel className="w-2.5 h-2.5" />
+                              {label}: {cfg.label}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Message */}
+                    {update.message && (
+                      <div className={`flex items-start gap-2 pt-1 border-t ${theme === 'dark' ? 'border-border' : 'border-gray-200'}`}>
+                        <MessageSquare className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                        <p className={`text-xs italic ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+                          "{update.message}"
+                        </p>
+                      </div>
+                    )}
                   </div>
                 );
-              })()}
-
-              {/* Message */}
-              {latestUpdate.message && (
-                <div className={`flex items-start gap-2 pt-1 border-t ${theme === 'dark' ? 'border-border' : 'border-gray-200'}`}>
-                  <MessageSquare className={`w-4 h-4 mt-0.5 flex-shrink-0 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-                  <p className={`text-sm italic ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                    "{latestUpdate.message}"
-                  </p>
-                </div>
-              )}
+              })}
             </div>
           </div>
         )}
