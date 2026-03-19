@@ -3,7 +3,7 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import { db } from './db.js';
 import { stations, fuelUpdates, stationRequests } from './schema.js';
-import { eq, asc } from 'drizzle-orm';
+import { eq, asc, desc } from 'drizzle-orm';
 import dotenv from 'dotenv';
 import path from 'path';
 
@@ -54,6 +54,32 @@ app.get('/api/stations', async (req, res) => {
     res.json(allStations);
   } catch (error) {
     console.error('Error fetching stations:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET latest update for a station (last reporter info)
+app.get('/api/stations/:id/latest-update', async (req, res) => {
+  try {
+    const stationId = parseInt(req.params.id);
+    if (isNaN(stationId)) {
+      return res.status(400).json({ error: 'Invalid station ID' });
+    }
+
+    const [latestUpdate] = await db
+      .select()
+      .from(fuelUpdates)
+      .where(eq(fuelUpdates.stationId, stationId))
+      .orderBy(desc(fuelUpdates.timestamp))
+      .limit(1);
+
+    if (!latestUpdate) {
+      return res.status(404).json({ error: 'No updates found' });
+    }
+
+    res.json(latestUpdate);
+  } catch (error) {
+    console.error('Error fetching latest update:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
