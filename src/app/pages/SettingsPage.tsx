@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SEO } from '../components/SEO';
-import { ArrowLeft, Moon, Sun, Globe, ChevronRight, CheckCircle2, Home, Settings, MessageSquare, Info, BookOpen } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Globe, ChevronRight, CheckCircle2, Home, Settings, MessageSquare, Info, BookOpen, Bell, Trash2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { toast, Toaster } from 'sonner';
 import { MapView } from '../components/MapView';
 import { fetchFuelStations } from '../services/osmService';
 import type { FuelStation } from '../types';
+import { useStationWatchList } from '../hooks/useStationWatchList';
+import { removeWatchedStation } from '../services/stationWatchStorage';
 
 export function SettingsPage() {
   const navigate = useNavigate();
   const { theme, toggleTheme, language, setLanguage, t } = useTheme();
   const [stations, setStations] = useState<FuelStation[]>([]);
+  const watchedStations = useStationWatchList();
 
   useEffect(() => {
     fetchFuelStations().then(setStations);
@@ -121,6 +124,51 @@ export function SettingsPage() {
                       )}
                     </button>
                   ))}
+                </div>
+              </section>
+
+              {/* Fuel alerts */}
+              <section className="space-y-4">
+                <h2 className={`text-[10px] font-bold uppercase tracking-[0.2em] px-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                  {t('notify.settingsTitle')}
+                </h2>
+                <p className={`text-[11px] font-medium leading-relaxed px-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
+                  {t('notify.settingsHint')}
+                </p>
+                <div className={`rounded-3xl border overflow-hidden shadow-sm transition-colors duration-500
+                  ${theme === 'dark' ? 'bg-gray-800/50 border-gray-700/50' : 'bg-white border-gray-100'}
+                `}>
+                  {watchedStations.length === 0 ? (
+                    <div className={`p-5 text-sm font-medium ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
+                      {t('notify.empty')}
+                    </div>
+                  ) : (
+                    <ul className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                      {watchedStations.map((s) => (
+                        <li key={s.id} className="flex items-center justify-between gap-3 p-4">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`p-2.5 rounded-xl shrink-0 ${theme === 'dark' ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-50 text-amber-700'}`}>
+                              <Bell className="w-4 h-4" />
+                            </div>
+                            <span className={`font-semibold text-sm truncate ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
+                              {s.name}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              removeWatchedStation(s.id);
+                              toast.success(t('notify.disabled'));
+                            }}
+                            className={`p-2.5 rounded-xl shrink-0 transition-colors ${theme === 'dark' ? 'hover:bg-white/10 text-gray-400' : 'hover:bg-red-50 text-red-500'}`}
+                            aria-label={t('notify.remove')}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </section>
 
