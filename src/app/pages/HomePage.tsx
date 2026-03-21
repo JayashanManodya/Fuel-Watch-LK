@@ -30,8 +30,8 @@ type NominatimSearchHit = {
 
 /** Default zoom (fractional); mobile vs desktop. */
 function initialMapZoom(): number {
-  if (typeof window === 'undefined') return 7.7;
-  return window.matchMedia('(max-width: 1023px)').matches ? 6.7 : 7.7;
+  if (typeof window === 'undefined') return 7.9;
+  return window.matchMedia('(max-width: 1023px)').matches ? 6.9 : 7.9;
 }
 
 export function HomePage() {
