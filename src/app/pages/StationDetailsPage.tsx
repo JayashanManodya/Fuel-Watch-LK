@@ -9,6 +9,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { API_BASE } from '../services/api';
 import { seedLastSeenFromServer } from '../services/stationWatchApi';
+import { ensureServiceWorkerForNotifications } from '../utils/showWebNotification';
 import {
   addWatchedStation,
   isWatchedStation,
@@ -260,6 +261,7 @@ export function StationDetailsPage() {
       toast.error(t('notify.permissionDenied'));
       return;
     }
+    await ensureServiceWorkerForNotifications();
     addWatchedStation({ id, name: localize(station, 'name') });
     await seedLastSeenFromServer(id);
     toast.success(t('notify.enabled'));

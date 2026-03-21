@@ -8,6 +8,7 @@ import {
   setLastSeenUpdateId,
 } from '../services/stationWatchStorage';
 import { buildWatchNotificationBody, getWatchNotifLang } from '../services/watchNotificationFormat';
+import { showWebNotification } from '../utils/showWebNotification';
 
 const POLL_MS = 45_000;
 
@@ -18,8 +19,6 @@ const POLL_MS = 45_000;
 export function StationWatchNotifier() {
   useEffect(() => {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
-
-    let intervalId: ReturnType<typeof setInterval>;
 
     const tick = async () => {
       if (Notification.permission !== 'granted') return;
@@ -49,9 +48,8 @@ export function StationWatchNotifier() {
               translations[lang]['app.title'] ?? translations.en['app.title'];
             const label = name?.trim() || `Station #${id}`;
             const body = buildWatchNotificationBody(lang, label, latest);
-            new Notification(title, {
+            await showWebNotification(title, {
               body,
-              icon: '/favicon.svg',
               tag: `fuelwatch-${id}-${latestId}`,
             });
           } else {
@@ -64,7 +62,7 @@ export function StationWatchNotifier() {
     };
 
     void tick();
-    intervalId = setInterval(tick, POLL_MS);
+    const intervalId = setInterval(tick, POLL_MS);
 
     const onVisible = () => {
       if (document.visibilityState === 'visible') void tick();
