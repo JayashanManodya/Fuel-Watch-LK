@@ -5,7 +5,8 @@ import { useTheme } from '../context/ThemeContext';
 
 const STORAGE_KEY = 'fuelalert-pwa-install-dismissed-at';
 const SUPPRESS_DAYS = 45;
-const SHOW_AFTER_MS = 18_000;
+/** Long enough to stay unobtrusive; short enough that people actually see it. */
+const SHOW_AFTER_MS = 12_000;
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -103,16 +104,26 @@ export function PwaInstallPrompt() {
     }
   };
 
-  const showAndroid = Boolean(timerDone && deferredPrompt && !dismissed);
-  const showIos = Boolean(timerDone && isIos() && !deferredPrompt && !dismissed);
+  const eligible =
+    timerDone &&
+    !dismissed &&
+    isMobileLayout() &&
+    !isStandalone();
 
-  if (!showAndroid && !showIos) return null;
+  if (!eligible) return null;
+
+  /** Native install sheet (Chrome/Edge over HTTPS or localhost). */
+  const showInstallButton = Boolean(deferredPrompt);
+  /** iOS Safari has no beforeinstallprompt. */
+  const showIosCopy = !deferredPrompt && isIos();
+  /** Android over plain HTTP (e.g. LAN dev URL) or browsers that never fire the event. */
+  const showMenuHint = !deferredPrompt && !isIos();
 
   const isDark = theme === 'dark';
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-[60] flex justify-center p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pointer-events-none"
+      className="fixed inset-x-0 z-[5500] flex justify-center p-3 pointer-events-none bottom-[calc(5rem+env(safe-area-inset-bottom,0px))]"
       role="region"
       aria-label={t('pwa.a11yRegion')}
     >
@@ -134,13 +145,17 @@ export function PwaInstallPrompt() {
           </div>
           <div className="min-w-0 flex-1 pt-0.5">
             <p className="text-sm font-semibold leading-tight">
-              {showIos ? t('pwa.titleIos') : t('pwa.title')}
+              {showIosCopy ? t('pwa.titleIos') : t('pwa.title')}
             </p>
             <p className="mt-1 text-xs leading-snug text-muted-foreground">
-              {showIos ? t('pwa.iosHint') : t('pwa.subtitle')}
+              {showIosCopy
+                ? t('pwa.iosHint')
+                : showMenuHint
+                  ? t('pwa.androidMenuHint')
+                  : t('pwa.subtitle')}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              {showAndroid ? (
+              {showInstallButton ? (
                 <Button
                   type="button"
                   size="sm"

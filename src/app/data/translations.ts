@@ -128,6 +128,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'pwa.subtitle': 'Open faster from your home screen — works offline after the first visit.',
     'pwa.iosHint':
       'Tap Share, then “Add to Home Screen” for quick access like a normal app.',
+    'pwa.androidMenuHint':
+      'Would you like to install Fuel Alert as an app?',
     'pwa.install': 'Install',
     'pwa.later': 'Not now',
     'pwa.close': 'Dismiss',
@@ -266,7 +268,9 @@ export const translations: Record<Language, Record<string, string>> = {
       'මුල් තිරයෙන් ඉක්මනින් විවෘත කරන්න — පළමු වර ගිය පසු ජාලය නැතුවත් ක්‍රියා කරයි.',
     'pwa.iosHint':
       'Share ඔබා “Add to Home Screen” තෝරන්න — සාමාන්‍ය යෙදුමක් වගේ පහසුවෙන් යන්න පුළුවන්.',
-    'pwa.install': 'ස්ථාපනය',
+    'pwa.androidMenuHint':
+      'ඔබට Fuel Alert app එකක් ලෙස ස්ථාපනය කිරීමට අවශ්‍යද?',
+    'pwa.install': 'අවශ්‍යයි',
     'pwa.later': 'අවශ්‍ය නැහැ',
     'pwa.close': 'වසන්න',
 
@@ -404,6 +408,8 @@ export const translations: Record<Language, Record<string, string>> = {
       'முகப்புத் திரையிலிருந்து விரைவாகத் திறக்கலாம் — முதல் முறைக்குப் பிறகு இணையம் இல்லாமலும் வேலை செய்யும்.',
     'pwa.iosHint':
       'Share ஐத் தட்டி “Add to Home Screen” ஐத் தேர்ந்தெடுக்கவும் — சாதாரண செயலியைப் போல எளிதாகப் பயன்படுத்தலாம்.',
+    'pwa.androidMenuHint':
+      'விரும்புகிறீர்களா Fuel Alert app ஐ நிறுவ விரும்புகிறீர்களா?',
     'pwa.install': 'நிறுவுக',
     'pwa.later': 'இப்போது வேண்டாம்',
     'pwa.close': 'மூடுக',
