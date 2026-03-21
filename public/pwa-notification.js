@@ -1,16 +1,4 @@
-/* Minimal service worker: enables installable PWA; passes all requests to the network. */
-self.addEventListener('install', (event) => {
-  event.waitUntil(self.skipWaiting());
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
-});
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(fetch(event.request));
-});
-
+/* Loaded by Workbox-generated sw.js — focus app when user taps a notification. */
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   event.waitUntil(
