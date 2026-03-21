@@ -1,4 +1,5 @@
 import type { FuelStation, FuelStatus } from '../types';
+import { API_BASE } from './api';
 
 interface OSMElement {
   id: number;
@@ -9,11 +10,6 @@ interface OSMElement {
 }
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
-const envApiBase = import.meta.env.VITE_API_URL;
-const isLocalDev =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-const API_URL = isLocalDev ? '/api' : envApiBase || '/api';
 
 function mapDbToFuelStation(dbStation: any): FuelStation {
   return {
@@ -45,7 +41,7 @@ function mapDbToFuelStation(dbStation: any): FuelStation {
 export async function fetchFuelStations(): Promise<FuelStation[]> {
   try {
     // 1. Try to fetch from our local PostgreSQL API
-    const response = await fetch(`${API_URL}/stations`);
+    const response = await fetch(`${API_BASE}/stations`);
     if (response.ok) {
       const dbStations = await response.json();
       if (dbStations && dbStations.length > 0) {
@@ -165,7 +161,7 @@ export async function adminSeedFromOSM(authHeader: string): Promise<{ success: b
     };
   });
 
-  const seedResponse = await fetch(`${API_URL}/stations/seed`, {
+  const seedResponse = await fetch(`${API_BASE}/stations/seed`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -184,7 +180,7 @@ export async function adminSeedFromOSM(authHeader: string): Promise<{ success: b
 
 // Reset all station data — admin only
 export async function adminResetStations(authHeader: string): Promise<void> {
-  const response = await fetch(`${API_URL}/stations/reset`, {
+  const response = await fetch(`${API_BASE}/stations/reset`, {
     method: 'POST',
     headers: { 'Authorization': authHeader },
   });

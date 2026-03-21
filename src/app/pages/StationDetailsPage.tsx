@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { SEO } from '../components/SEO';
-import { ArrowLeft, MapPin, Navigation, Share2, Fuel, TrendingUp, AlertCircle, Send, CheckCircle, X, PlusCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Navigation, Share2, Fuel, TrendingUp, AlertCircle, Send, CheckCircle, X, PlusCircle, Bell, BellOff } from 'lucide-react';
 // import { fetchFuelStations } from '../services/osmService';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -8,6 +8,13 @@ import type { FuelStation, UserUpdate, FuelStatus, SubmitUpdateForm } from '../t
 import { useState, useEffect, type ReactNode } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { API_BASE } from '../services/api';
+import { seedLastSeenFromServer } from '../services/stationWatchApi';
+import {
+  addWatchedStation,
+  isWatchedStation,
+  removeWatchedStation,
+  WATCH_CHANGED_EVENT,
+} from '../services/stationWatchStorage';
 import { Label } from '../components/ui/label';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
@@ -23,6 +30,7 @@ export function StationDetailsPage() {
   const [isLoading] = useState(!station);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [alertsOn, setAlertsOn] = useState(() => (id ? isWatchedStation(id) : false));
 
   const [formData, setFormData] = useState<SubmitUpdateForm>({
     stationId: id || '',
@@ -55,6 +63,14 @@ export function StationDetailsPage() {
       setFormData(prev => ({ ...prev, status: newStatus }));
     }
   }, [formData.petrol92, formData.petrol95, formData.autoDiesel, formData.superDiesel, formData.kerosene]);
+
+  useEffect(() => {
+    if (!id) return;
+    setAlertsOn(isWatchedStation(id));
+    const sync = () => setAlertsOn(isWatchedStation(id));
+    window.addEventListener(WATCH_CHANGED_EVENT, sync);
+    return () => window.removeEventListener(WATCH_CHANGED_EVENT, sync);
+  }, [id]);
 
   // Load last 5 community updates for this station
   useEffect(() => {
@@ -228,6 +244,27 @@ export function StationDetailsPage() {
     );
   };
 
+  const handleNotifyToggle = async () => {
+    if (!id || !station) return;
+    if (isWatchedStation(id)) {
+      removeWatchedStation(id);
+      toast.success(t('notify.disabled'));
+      return;
+    }
+    if (!('Notification' in window)) {
+      toast.error(t('notify.unsupported'));
+      return;
+    }
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      toast.error(t('notify.permissionDenied'));
+      return;
+    }
+    addWatchedStation({ id, name: localize(station, 'name') });
+    await seedLastSeenFromServer(id);
+    toast.success(t('notify.enabled'));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.userName) {
@@ -313,16 +350,32 @@ export function StationDetailsPage() {
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-xl hover:bg-gray-100 active:scale-95 transition-all"
+              className={`p-2 rounded-xl active:scale-95 transition-all ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}
             >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
+              <ArrowLeft className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`} />
             </button>
-            <button
-              onClick={handleShare}
-              className="p-2 rounded-xl hover:bg-gray-100 active:scale-95 transition-all"
-            >
-              <Share2 className="w-5 h-5 text-gray-700" />
-            </button>
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={handleNotifyToggle}
+                title={alertsOn ? t('notify.disable') : t('notify.enable')}
+                aria-pressed={alertsOn}
+                className={`p-2 rounded-xl active:scale-95 transition-all ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}
+              >
+                {alertsOn ? (
+                  <Bell className={`w-5 h-5 ${theme === 'dark' ? 'text-amber-400' : 'text-amber-600'}`} />
+                ) : (
+                  <BellOff className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className={`p-2 rounded-xl active:scale-95 transition-all ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-gray-100'}`}
+              >
+                <Share2 className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`} />
+              </button>
+            </div>
           </div>
         </div>
       </header>

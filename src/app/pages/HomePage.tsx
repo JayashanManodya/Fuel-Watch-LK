@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SEO } from '../components/SEO';
 import { FilterChips } from '../components/FilterChips';
@@ -14,9 +14,23 @@ import type { MapBounds, SearchSuggestion } from '../types';
 type FuelType = 'all' | 'petrol92' | 'petrol95' | 'autoDiesel' | 'superDiesel' | 'kerosene';
 type SortBy = 'status' | 'distance' | 'queue';
 
+const REVERSE_GEO_DEBOUNCE_MS = 600;
+const VIEWPORT_FILTER_MIN_ZOOM = 9;
+const VIEWPORT_PADDING_RATIO = 0.08;
+const SEARCH_DEBOUNCE_MS = 180;
+const SEARCH_STATION_LIMIT = 5;
+const SEARCH_LOCATION_LIMIT = 5;
+
+type NominatimSearchHit = {
+  place_id: number;
+  lat: string;
+  lon: string;
+  display_name: string;
+};
+
 export function HomePage() {
   const navigate = useNavigate();
-  const { theme, t, localize } = useTheme();
+  const { theme, t, localize, language } = useTheme();
   const [activeFilter, setActiveFilter] = useState<FuelType>('all');
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [stations, setStations] = useState<FuelStation[]>([]);
@@ -32,8 +46,23 @@ export function HomePage() {
   const [currentMapZoom, setCurrentMapZoom] = useState(8);
   const [selectedStation, setSelectedStation] = useState<FuelStation | null>(null);
   const [isStationSheetOpen, setIsStationSheetOpen] = useState(false);
+  /** Last zoom from the map (moveend); not synced into center/zoom props to avoid fighting user pan. */
+  const [viewportZoom, setViewportZoom] = useState(8);
+
+  const reverseGeoDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reverseGeoAbortRef = useRef<AbortController | null>(null);
+  const searchSuggestSeqRef = useRef(0);
+  const localizeRef = useRef(localize);
+  localizeRef.current = localize;
 
   const isMobile = useMemo(() => window.matchMedia?.('(max-width: 1023px)')?.matches ?? true, []);
+
+  useEffect(() => {
+    return () => {
+      if (reverseGeoDebounceRef.current) clearTimeout(reverseGeoDebounceRef.current);
+      reverseGeoAbortRef.current?.abort();
+    };
+  }, []);
 
   useEffect(() => {
     const loadStations = async () => {
@@ -112,9 +141,9 @@ export function HomePage() {
           },
           (error) => reject(error),
           {
-            enableHighAccuracy: true,
+            enableHighAccuracy: false,
             timeout: 15000,
-            maximumAge: 10000,
+            maximumAge: 60000,
           }
         );
       }),
@@ -128,99 +157,148 @@ export function HomePage() {
     );
   }, [stations]);
 
-  const handleBoundsChange = useCallback(async (center: [number, number], zoom: number, bounds: MapBounds) => {
+  const handleBoundsChange = useCallback((center: [number, number], zoom: number, bounds: MapBounds) => {
     setMapBounds(bounds);
-    if (zoom < 9) {
-      if (locationName !== t('location.allIsland')) {
-        setLocationName(t('location.allIsland'));
+    setViewportZoom(zoom);
+
+    if (zoom < VIEWPORT_FILTER_MIN_ZOOM) {
+      if (reverseGeoDebounceRef.current) {
+        clearTimeout(reverseGeoDebounceRef.current);
+        reverseGeoDebounceRef.current = null;
       }
+      reverseGeoAbortRef.current?.abort();
+      reverseGeoAbortRef.current = null;
+      setLocationName((prev) => (prev === t('location.allIsland') ? prev : t('location.allIsland')));
       return;
     }
 
-    try {
-      // Nominatim zoom mapping
+    if (reverseGeoDebounceRef.current) clearTimeout(reverseGeoDebounceRef.current);
+
+    reverseGeoDebounceRef.current = setTimeout(() => {
+      reverseGeoDebounceRef.current = null;
+      reverseGeoAbortRef.current?.abort();
+      const ac = new AbortController();
+      reverseGeoAbortRef.current = ac;
+
       const nominatimZoom = Math.min(Math.max(Math.floor(zoom), 3), 18);
-      
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${center[0]}&lon=${center[1]}&format=json&zoom=${nominatimZoom}`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        const address = data.address;
-        
-        let newLocationName = 'All Island';
-        if (address) {
-          if (zoom >= 11) {
-            const localName = address.neighbourhood || address.suburb || address.village || address.town || address.city || address.county;
-            if (localName) {
-              newLocationName = localName.replace(/ District$/i, '').replace(/ Division$/i, '').trim();
-            } else if (address.state) {
+      const url = `https://nominatim.openstreetmap.org/reverse?lat=${center[0]}&lon=${center[1]}&format=json&zoom=${nominatimZoom}`;
+
+      void (async () => {
+        try {
+          const response = await fetch(url, {
+            signal: ac.signal,
+            headers: { Accept: 'application/json' },
+          });
+          if (!response.ok || ac.signal.aborted) return;
+          const data = (await response.json()) as { address?: Record<string, string> };
+          if (ac.signal.aborted) return;
+
+          const address = data.address;
+          let newLocationName = 'All Island';
+          if (address) {
+            if (zoom >= 11) {
+              const localName =
+                address.neighbourhood ||
+                address.suburb ||
+                address.village ||
+                address.town ||
+                address.city ||
+                address.county;
+              if (localName) {
+                newLocationName = localName.replace(/ District$/i, '').replace(/ Division$/i, '').trim();
+              } else if (address.state) {
+                const provinceName = address.state;
+                newLocationName = provinceName.toLowerCase().includes('province')
+                  ? provinceName
+                  : `${provinceName} Province`;
+              }
+            } else if (zoom >= VIEWPORT_FILTER_MIN_ZOOM) {
               const provinceName = address.state;
-              newLocationName = provinceName.toLowerCase().includes('province') ? provinceName : `${provinceName} Province`;
-            }
-          } else if (zoom >= 9) {
-            const provinceName = address.state;
-            if (provinceName) {
-              newLocationName = provinceName.toLowerCase().includes('province') ? provinceName : `${provinceName} Province`;
+              if (provinceName) {
+                newLocationName = provinceName.toLowerCase().includes('province')
+                  ? provinceName
+                  : `${provinceName} Province`;
+              }
             }
           }
-        }
-        
-        if (newLocationName !== locationName) {
-           setLocationName(newLocationName);
-        }
-      }
-    } catch (error) {
-       // Silently fail reverse geocoding to not spam the user
-    }
-  }, [locationName]);
 
-  // Debounced search suggestions
+          setLocationName((prev) => (newLocationName !== prev ? newLocationName : prev));
+        } catch (e) {
+          if (e instanceof Error && e.name === 'AbortError') return;
+        }
+      })();
+    }, REVERSE_GEO_DEBOUNCE_MS);
+  }, [t]);
+
+  // Debounced search: show local stations as soon as the timer fires; merge Nominatim when it returns.
   useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (searchQuery.length < 2) {
-        setSuggestions([]);
-        return;
+    const trimmed = searchQuery.trim();
+    if (trimmed.length < 2) {
+      setSuggestions([]);
+      return;
+    }
+
+    const seq = ++searchSuggestSeqRef.current;
+    const ac = new AbortController();
+    const qLower = trimmed.toLowerCase();
+
+    const timer = setTimeout(() => {
+      const loc = localizeRef.current;
+      const stationMatches: SearchSuggestion[] = [];
+      for (const s of stations) {
+        const title = loc(s, 'name');
+        const subtitle = loc(s, 'address');
+        if (title.toLowerCase().includes(qLower) || subtitle.toLowerCase().includes(qLower)) {
+          stationMatches.push({
+            id: s.id,
+            type: 'station',
+            title,
+            subtitle,
+            coordinates: s.coordinates,
+            station: s,
+          });
+          if (stationMatches.length >= SEARCH_STATION_LIMIT) break;
+        }
       }
 
-      // 1. Filter local stations
-      const stationMatches = stations
-        .filter(s => 
-          s.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          s.address.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .slice(0, 5)
-        .map(s => ({
-          id: s.id,
-          type: 'station' as const,
-          title: localize(s, 'name'),
-          subtitle: localize(s, 'address'),
-          coordinates: s.coordinates,
-          station: s
-        }));
+      if (seq !== searchSuggestSeqRef.current) return;
+      setSuggestions(stationMatches);
 
-      // 2. Fetch from Nominatim
-      let locationMatches: SearchSuggestion[] = [];
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=5&countrycodes=lk`);
-        if (res.ok) {
-          const data = await res.json();
-          locationMatches = data.map((item: any) => ({
-            id: `loc-${item.place_id}`,
-            type: 'location' as const,
-            title: item.display_name.split(',')[0],
-            subtitle: item.display_name.split(',').slice(1).join(',').trim(),
-            coordinates: [parseFloat(item.lat), parseFloat(item.lon)]
-          }));
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(trimmed)}&format=json&limit=${SEARCH_LOCATION_LIMIT}&countrycodes=lk`;
+
+      void (async () => {
+        let locationMatches: SearchSuggestion[] = [];
+        try {
+          const res = await fetch(url, {
+            signal: ac.signal,
+            headers: { Accept: 'application/json' },
+          });
+          if (!res.ok || seq !== searchSuggestSeqRef.current) return;
+          const data = (await res.json()) as NominatimSearchHit[];
+          if (!Array.isArray(data) || seq !== searchSuggestSeqRef.current) return;
+          locationMatches = data.map((item) => {
+            const parts = item.display_name.split(',');
+            return {
+              id: `loc-${item.place_id}`,
+              type: 'location' as const,
+              title: parts[0]?.trim() ?? item.display_name,
+              subtitle: parts.slice(1).join(',').trim(),
+              coordinates: [parseFloat(item.lat), parseFloat(item.lon)] as [number, number],
+            };
+          });
+        } catch (e) {
+          if (e instanceof Error && e.name === 'AbortError') return;
         }
-      } catch (e) {}
+        if (seq !== searchSuggestSeqRef.current) return;
+        setSuggestions([...stationMatches, ...locationMatches]);
+      })();
+    }, SEARCH_DEBOUNCE_MS);
 
-      setSuggestions([...stationMatches, ...locationMatches]);
+    return () => {
+      clearTimeout(timer);
+      ac.abort();
     };
-
-    const timer = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery, stations]);
+  }, [searchQuery, stations, language]);
 
   const handleSelectSuggestion = (suggestion: SearchSuggestion) => {
     setCurrentMapCenter(suggestion.coordinates);
@@ -238,32 +316,45 @@ export function HomePage() {
     setIsSearchFocused(false);
   };
 
-  const filteredStations = stations.filter((station) => {
-    const matchesFilter = activeFilter === 'all' || station.fuelTypes[activeFilter as keyof typeof station.fuelTypes] !== undefined;
-    
-    let isInBounds = true;
-    if (mapBounds && locationName !== t('location.allIsland')) {
-      const { northEast, southWest } = mapBounds;
-      const [lat, lng] = station.coordinates;
-      isInBounds = lat <= northEast[0] && lat >= southWest[0] && 
-                   lng <= northEast[1] && lng >= southWest[1];
-    }
+  const filteredStations = useMemo(() => {
+    return stations.filter((station) => {
+      const matchesFilter =
+        activeFilter === 'all' ||
+        station.fuelTypes[activeFilter as keyof typeof station.fuelTypes] !== undefined;
+      if (!matchesFilter) return false;
 
-    return matchesFilter && isInBounds;
-  });
+      if (mapBounds && viewportZoom >= VIEWPORT_FILTER_MIN_ZOOM) {
+        const { northEast, southWest } = mapBounds;
+        const latSpan = northEast[0] - southWest[0];
+        const lngSpan = northEast[1] - southWest[1];
+        const padLat = latSpan * VIEWPORT_PADDING_RATIO;
+        const padLng = lngSpan * VIEWPORT_PADDING_RATIO;
+        const neLat = northEast[0] + padLat;
+        const swLat = southWest[0] - padLat;
+        const neLng = northEast[1] + padLng;
+        const swLng = southWest[1] - padLng;
+        const [lat, lng] = station.coordinates;
+        return lat <= neLat && lat >= swLat && lng <= neLng && lng >= swLng;
+      }
 
-  // Sort stations
-  const sortedStations = [...filteredStations].sort((a, b) => {
-    if (sortBy === 'distance' && a.distance !== undefined && b.distance !== undefined) {
-      return a.distance - b.distance;
-    }
-    if (sortBy === 'queue') {
-      return (a.petrolQueueLength + a.dieselQueueLength) - (b.petrolQueueLength + b.dieselQueueLength);
-    }
-    // Sort by status: available > limited > out-of-stock
-    const statusOrder = { available: 0, limited: 1, 'out-of-stock': 2 };
-    return statusOrder[a.status] - statusOrder[b.status];
-  });
+      return true;
+    });
+  }, [stations, activeFilter, mapBounds, viewportZoom]);
+
+  const sortedStations = useMemo(() => {
+    const list = [...filteredStations];
+    list.sort((a, b) => {
+      if (sortBy === 'distance' && a.distance !== undefined && b.distance !== undefined) {
+        return a.distance - b.distance;
+      }
+      if (sortBy === 'queue') {
+        return a.petrolQueueLength + a.dieselQueueLength - (b.petrolQueueLength + b.dieselQueueLength);
+      }
+      const statusOrder = { available: 0, limited: 1, 'out-of-stock': 2 };
+      return statusOrder[a.status] - statusOrder[b.status];
+    });
+    return list;
+  }, [filteredStations, sortBy]);
 
   const handleStationClick = useCallback((station: FuelStation) => {
     navigate(`/station/${station.id}`, { state: { station } });

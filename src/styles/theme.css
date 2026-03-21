@@ -270,6 +270,12 @@
     line-height: inherit !important;
   }
 
+  /* Custom marker-cluster count badges (MapView) */
+  .leaflet-marker-icon.fuel-marker-cluster {
+    background: transparent !important;
+    border: none !important;
+  }
+
   /* Mobile: Leaflet zoom (+/-) — lower on screen (above bottom nav, easier to tap) */
   @media (max-width: 1023px) {
     .leaflet-top.leaflet-left {
