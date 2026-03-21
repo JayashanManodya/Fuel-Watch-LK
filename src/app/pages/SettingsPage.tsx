@@ -36,10 +36,10 @@ export function SettingsPage() {
       />
       <Toaster position="top-center" richColors />
       
-      <div className={`flex flex-col lg:flex-row h-screen lg:h-screen overflow-hidden ${theme === 'dark' ? 'bg-[#121212] text-white' : 'bg-white/50 text-gray-900'} transition-colors duration-500`}>
-        {/* Settings Side Panel */}
+      <div className={`flex flex-col lg:flex-row h-[100dvh] min-h-0 overflow-hidden ${theme === 'dark' ? 'bg-[#121212] text-white' : 'bg-white/50 text-gray-900'} transition-colors duration-500`}>
+        {/* Settings Side Panel — flex-1 + min-h-0 so overflow-y-auto can scroll on small screens */}
         <aside className={`
-          flex flex-col w-full lg:w-[400px] xl:w-[450px] lg:h-full border-r transition-colors duration-500 z-40
+          flex flex-col flex-1 min-h-0 w-full lg:flex-none lg:w-[400px] xl:w-[450px] lg:h-full border-r transition-colors duration-500 z-40
           ${theme === 'dark' ? 'bg-[#1a1a1a]/80 backdrop-blur-2xl border-[#2a2a2a]' : 'bg-white/40 backdrop-blur-2xl border-gray-200/50'}
         `}>
           <header className={`sticky top-0 z-50 backdrop-blur-xl border-b px-6 py-5 shrink-0 transition-colors duration-500
@@ -59,8 +59,8 @@ export function SettingsPage() {
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-6 space-y-8">
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain">
+            <div className="p-6 pb-28 lg:pb-6 space-y-8">
               {/* Appearance Section */}
               <section className="space-y-4">
                 <h2 className={`text-[10px] font-bold uppercase tracking-[0.2em] px-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
@@ -224,7 +224,7 @@ export function SettingsPage() {
         </aside>
 
         {/* Map Section */}
-        <main className={`flex-1 relative h-full hidden lg:block ${theme === 'dark' ? 'bg-[#121212]' : 'bg-gray-50'}`}>
+        <main className={`flex-1 relative min-h-0 h-full hidden lg:block ${theme === 'dark' ? 'bg-[#121212]' : 'bg-gray-50'}`}>
           <MapView
             stations={stations}
             onStationClick={(station) => navigate(`/station/${station.id}`, { state: { station } })}
