@@ -3,10 +3,8 @@ import { Download, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { useTheme } from '../context/ThemeContext';
 
-const STORAGE_KEY = 'fuelalert-pwa-install-dismissed-at';
-const SUPPRESS_DAYS = 45;
-/** Long enough to stay unobtrusive; short enough that people actually see it. */
-const SHOW_AFTER_MS = 12_000;
+/** Short delay after load so the UI can settle first. */
+const SHOW_AFTER_MS = 8_000;
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -32,22 +30,9 @@ function isIos(): boolean {
   );
 }
 
-function isDismissedRecently(): boolean {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
-    const t = new Date(raw).getTime();
-    if (Number.isNaN(t)) return false;
-    const days = (Date.now() - t) / 86_400_000;
-    return days < SUPPRESS_DAYS;
-  } catch {
-    return false;
-  }
-}
-
 /**
- * Unobtrusive mobile-only hint to install the PWA: waits before showing,
- * small bottom bar, easy dismiss, suppressed for weeks after dismiss.
+ * Mobile-only install hint when the app is not installed (not standalone).
+ * Shown again on every full page load; dismiss hides until refresh/navigation remount only.
  */
 export function PwaInstallPrompt() {
   const { theme, t } = useTheme();
@@ -59,7 +44,7 @@ export function PwaInstallPrompt() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!isMobileLayout() || isStandalone() || isDismissedRecently()) return;
+    if (!isMobileLayout() || isStandalone()) return;
 
     const id = window.setTimeout(() => setTimerDone(true), SHOW_AFTER_MS);
     return () => window.clearTimeout(id);
@@ -79,11 +64,6 @@ export function PwaInstallPrompt() {
   }, []);
 
   const dismiss = useCallback(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, new Date().toISOString());
-    } catch {
-      /* ignore */
-    }
     setDismissed(true);
   }, []);
 
