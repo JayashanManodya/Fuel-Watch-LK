@@ -205,7 +205,7 @@ export function MapView({
         maxBounds: sriLankaBounds,
         maxBoundsViscosity: 1.0,
         minZoom: 6,
-        zoomSnap: 0.5,
+        zoomSnap: 0.1,
       }).setView(center, zoom);
 
       const osmTiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
