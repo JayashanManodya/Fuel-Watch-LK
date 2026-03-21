@@ -1,45 +1,8 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet.markercluster/dist/MarkerCluster.css';
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
-import 'leaflet.markercluster';
 import type { FuelStation, MapBounds } from '../types';
 import { useTheme } from '../context/ThemeContext';
-
-type ClusterFuelStatus = 'available' | 'limited' | 'out-of-stock' | 'not-available';
-
-const MARKER_EFFECTIVE_STATUS = '_fuelEffectiveStatus' as const;
-
-function readMarkerEffectiveStatus(m: L.Marker): ClusterFuelStatus {
-  const v = (m as L.Marker & { [MARKER_EFFECTIVE_STATUS]?: ClusterFuelStatus })[
-    MARKER_EFFECTIVE_STATUS
-  ];
-  if (v === 'available' || v === 'limited' || v === 'out-of-stock' || v === 'not-available') {
-    return v;
-  }
-  return 'not-available';
-}
-
-/** Majority status inside a cluster; ties break in favour of earlier key (available first). */
-function dominantClusterStatus(markers: L.Marker[]): ClusterFuelStatus {
-  const counts: Record<ClusterFuelStatus, number> = {
-    available: 0,
-    limited: 0,
-    'out-of-stock': 0,
-    'not-available': 0,
-  };
-  for (const m of markers) {
-    counts[readMarkerEffectiveStatus(m)] += 1;
-  }
-  const priority: ClusterFuelStatus[] = [
-    'available',
-    'limited',
-    'out-of-stock',
-    'not-available',
-  ];
-  return priority.reduce((best, k) => (counts[k] > counts[best] ? k : best), 'not-available');
-}
 
 interface MapViewProps {
   stations: FuelStation[];
@@ -66,12 +29,12 @@ export function MapView({
   onLocationSelect,
   selectedLocation,
   variant = 'popup',
-  className
+  className,
 }: MapViewProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
-  const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
   const userMarkerRef = useRef<L.CircleMarker | null>(null);
   const selectionMarkerRef = useRef<L.Marker | null>(null);
   const { theme } = useTheme();
@@ -82,7 +45,6 @@ export function MapView({
   const onLocationSelectRef = useRef(onLocationSelect);
   const stationsRef = useRef(stations);
   const variantRef = useRef(variant);
-
   useEffect(() => {
     onLocationSelectRef.current = onLocationSelect;
   }, [onLocationSelect]);
@@ -290,9 +252,9 @@ export function MapView({
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
-    if (clusterRef.current) {
-      mapInstanceRef.current.removeLayer(clusterRef.current);
-      clusterRef.current = null;
+    if (markersLayerRef.current) {
+      mapInstanceRef.current.removeLayer(markersLayerRef.current);
+      markersLayerRef.current = null;
     }
 
     if (stations.length === 0) return;
@@ -319,61 +281,36 @@ export function MapView({
       return hasAnyFuelData ? station.status : 'not-available';
     };
 
-    // Create custom icon function
+    // Classic teardrop pin + large white “hole” in the head (flat style, status-coloured body)
     const createCustomIcon = (status: string) => {
       const color = getMarkerColor(status);
-      
+      const stroke =
+        theme === 'dark' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.98)';
+
       return L.divIcon({
         html: `
-          <div style="position: relative; width: 32px; height: 40px;">
-            <svg width="32" height="40" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 0C7.163 0 0 7.163 0 16C0 28 16 40 16 40C16 40 32 28 32 16C32 7.163 24.837 0 16 0Z" fill="${color}"/>
-              <circle cx="16" cy="16" r="8" fill="white"/>
+          <div style="width:28px;height:35px;pointer-events:auto;">
+            <svg width="28" height="35" viewBox="0 0 32 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path
+                d="M16 0C7.163 0 0 7.163 0 16C0 28 16 40 16 40C16 40 32 28 32 16C32 7.163 24.837 0 16 0Z"
+                fill="${color}"
+                stroke="${stroke}"
+                stroke-width="1.15"
+                stroke-linejoin="round"
+              />
+              <circle cx="16" cy="14.5" r="7.75" fill="white" />
+              <circle cx="16" cy="14.5" r="3.85" fill="${color}" />
             </svg>
-            <div style="position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: ${color}; border-radius: 50%; box-shadow: 0 0 8px rgba(0,0,0,0.3);"></div>
           </div>
         `,
         className: 'custom-marker',
-        iconSize: [32, 40],
-        iconAnchor: [16, 40],
-        popupAnchor: [0, -40],
+        iconSize: [28, 35],
+        iconAnchor: [14, 35],
+        popupAnchor: [0, -34],
       });
     };
 
-    const cluster = L.markerClusterGroup({
-      disableClusteringAtZoom: 16,
-      maxClusterRadius: (z: number) => (z <= 9 ? 72 : z <= 11 ? 64 : 52),
-      spiderfyOnMaxZoom: true,
-      showCoverageOnHover: false,
-      zoomToBoundsOnClick: true,
-      removeOutsideVisibleBounds: true,
-      chunkedLoading: stations.length > 120,
-      chunkInterval: 200,
-      chunkDelay: 50,
-      iconCreateFunction: (clusterGroup) => {
-        const leaves = clusterGroup.getAllChildMarkers();
-        const dominant = dominantClusterStatus(leaves);
-        const n = clusterGroup.getChildCount();
-        const size = n >= 500 ? 52 : n >= 100 ? 48 : n >= 10 ? 44 : 40;
-        const bg = getMarkerColor(dominant);
-        const border =
-          theme === 'dark' ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.92)';
-        const shadow =
-          dominant === 'available'
-            ? '0 2px 12px rgba(0, 200, 83, 0.45)'
-            : dominant === 'limited'
-              ? '0 2px 12px rgba(255, 171, 0, 0.4)'
-              : dominant === 'out-of-stock'
-                ? '0 2px 12px rgba(213, 0, 0, 0.4)'
-                : '0 2px 10px rgba(0,0,0,0.28)';
-        return L.divIcon({
-          html: `<div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${bg};color:#fff;font-weight:800;font-size:${n >= 100 ? 12 : 14}px;line-height:1;border-radius:50%;border:2px solid ${border};box-shadow:${shadow};text-shadow:0 1px 2px rgba(0,0,0,0.35);">${n}</div>`,
-          className: 'fuel-marker-cluster',
-          iconSize: L.point(size, size),
-          iconAnchor: L.point(size / 2, size / 2),
-        });
-      },
-    });
+    const layer = L.layerGroup();
 
     const newMarkers: L.Marker[] = [];
 
@@ -382,8 +319,6 @@ export function MapView({
       const marker = L.marker(station.coordinates, {
         icon: createCustomIcon(effectiveStatus),
       });
-      const tagged = marker as L.Marker & Partial<Record<typeof MARKER_EFFECTIVE_STATUS, ClusterFuelStatus>>;
-      tagged[MARKER_EFFECTIVE_STATUS] = effectiveStatus as ClusterFuelStatus;
 
       if (variant === 'select') {
         marker.on('click', (e: L.LeafletMouseEvent) => {
@@ -526,9 +461,9 @@ export function MapView({
       newMarkers.push(marker);
     });
 
-    cluster.addLayers(newMarkers);
-    cluster.addTo(mapInstanceRef.current);
-    clusterRef.current = cluster;
+    for (const m of newMarkers) layer.addLayer(m);
+    layer.addTo(mapInstanceRef.current);
+    markersLayerRef.current = layer;
   }, [stations, theme, variant]);
 
   return <div ref={mapRef} className={className ?? "w-full h-full overflow-hidden"} />;
