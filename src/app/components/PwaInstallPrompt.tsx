@@ -183,13 +183,11 @@ function PwaInstallPromptImpl({ onMarkedInstalled }: PwaInstallPromptImplProps) 
             <p className="text-sm font-semibold leading-tight">
               {showIosCopy ? t('pwa.titleIos') : t('pwa.title')}
             </p>
-            <p className="mt-1 text-xs leading-snug text-muted-foreground">
-              {showIosCopy
-                ? t('pwa.iosHint')
-                : showMenuHint
-                  ? t('pwa.androidMenuHint')
-                  : t('pwa.subtitle')}
-            </p>
+            {(showIosCopy || showMenuHint) && (
+              <p className="mt-1 text-xs leading-snug text-muted-foreground">
+                {showIosCopy ? t('pwa.iosHint') : t('pwa.androidMenuHint')}
+              </p>
+            )}
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {showInstallButton ? (
                 <Button
