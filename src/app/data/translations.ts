@@ -16,9 +16,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'view.map': 'Map',
     'view.list': 'List',
     'view.locate': 'Locate Me',
-    'map.clusterDistrict': 'By district',
-    'map.clusterProximity': 'Nearby clusters',
-    'map.districtZoomHint': 'Click to zoom in',
 
     // Sort
     'sort.status': 'Status',
@@ -297,9 +294,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'view.map': 'வரைபடம்',
     'view.list': 'பட்டியல்',
     'view.locate': 'என்னைக் கண்டுபிடி',
-    'map.clusterDistrict': 'மாவட்டப்படி',
-    'map.clusterProximity': 'அருகிலுள்ள குழுக்கள்',
-    'map.districtZoomHint': 'பெரிதாக்க கிளிக் செய்யவும்',
 
     // Sort
     'sort.status': 'நிலை',
